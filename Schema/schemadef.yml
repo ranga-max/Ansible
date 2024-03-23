@@ -1,0 +1,59 @@
+schemas:
+       record_schemas:
+         - record_name: "com.mycorp.mynamespace.recordonlyavro"
+           schema_file_src_path: "/home/ubuntu/Schema/recordonlyavro.avsc"
+         - record_name: "com.mycorp.mynamespace.recordonlyproto"
+           schema_file_src_path: "/home/ubuntu/Schema/recordonlyproto.proto"
+         - record_name: "com.mycorp.mynamespace.recordonlyjson"
+           schema_file_src_path: "/home/ubuntu/Schema/recordonlyjson.json"
+       topics:
+         - name: test
+           key:
+             schema_file_src_path: "/home/ubuntu/Schema/testkey.avsc"
+           value:
+             schema_file_src_path: "/home/ubuntu/Schema/testvalue.avsc"  
+             schema_delete_all: true # Optional Delete Switch you can add to delete  schema all versions for the subject/scope
+             record_schemas:
+                  - record_name: "com.mycorp.mynamespace.address"
+                    schema_file_src_path: "/home/ubuntu/Schema/testaddr.avsc"
+         - name: test2
+           key:
+             schema_file_src_path: "/home/ubuntu/Schema/test6key.proto"
+             record_schemas:
+                  - record_name: "com.mycorp.mynamespace.address"
+                    schema_file_src_path: "/home/ubuntu/Schema/test6addr.proto"
+           value:
+             schema_file_src_path: "/home/ubuntu/Schema/test6value.proto"   
+             schema_delete_curr: true # Optional Delete Switch you can add to delete  schema all versions for the subject/scope
+         - name: test3
+           key:
+             schema_file_src_path: "/home/ubuntu/Schema/test3key.json"
+             compatibility: "FORWARD" #--> Compatibility is an optional parameter; The schema management process sets a default 'BACKWARD' if not specified
+             record_schemas:
+                  - record_name: "com.mycorp.mynamespace.address"
+                    compatibilty: "FORWARD"
+                    schema_file_src_path: "/home/ubuntu/Schema/test3addr.json"
+                  - record_name: "com.mycorp.mynamespace.occupation"
+                    schema_file_src_path: "/home/ubuntu/Schema/test3occupation.json"  
+           value:
+             schema_file_src_path: "/home/ubuntu/Schema/test3value.json"
+             record_schemas:
+                  - record_name: "com.mycorp.mynamespace.address"
+                    schema_file_src_path: "/home/ubuntu/Schema/test3addrval.json"
+                  - record_name: "com.mycorp.mynamespace.occupation"
+                    schema_file_src_path: "/home/ubuntu/Schema/test3occupationval.json"
+         - name: test4
+           key:
+             schema_file_src_path: "/home/ubuntu/Schema/test4key.avsc"
+           value:
+             schema_file_src_path: "/home/ubuntu/Schema/test4value.avsc"
+         - name: test5
+           key:
+             schema_file_src_path: "/home/ubuntu/Schema/test5key.avsc"
+         - name: test6
+           value:
+             schema_file_src_path: "/home/ubuntu/Schema/test5value.avsc" 
+         - name: _confluent-internal # We can protect the schema of internal topics from being modified...So the mentioned topic will not have any effect when running the process
+           value:
+             schema_file_src_path: "/home/ubuntu/Schema/internalvalue.avsc"    
+

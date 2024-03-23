@@ -1,0 +1,164 @@
+# Automatically created from terraform data on 
+
+all:
+  vars:
+    ansible_connection: ssh
+    ansible_user: ubuntu
+    ansible_become: true
+    installation_method: archive
+    confluent_archive_file_source: /home/ubuntu/confluent-7.3.1.zip
+    confluent_archive_file_remote: false  
+    deployment_strategy: parallel  
+      #validate_hosts: false  
+    ansible_ssh_private_key_file: Week2_Trng.pem
+    jolokia_enabled: false
+    jmxexporter_enabled: true
+    jmxexporter_url_remote: false
+    jmxexporter_jar_url: /home/ubuntu/jmx_prometheus_javaagent-0.12.0.jar   
+    kafka_broker_custom_listeners:
+        broker:
+            name: BROKER
+            port: 9091
+        internal:
+            name: INTERNAL
+            port: 9092
+        client_listener:
+            name: CLIENT
+            port: 9093
+    sasl_protocol: plain
+    sasl_plain_users:
+      admin:
+        principal: 'kafka'
+        password: 'admin-secret'
+      schema_registry:
+        principal: 'schema-registry'
+        password: 'schema_registry-secret'
+      control_center:
+        principal: 'control-center'
+        password: 'control_center-secret'
+      kafka_rest:
+        principal: 'kafka_rest'
+        password: 'kafka_rest-secret'
+      client:
+        principal: 'client'
+        password: 'client-secret'
+      user1:
+        principal: 'user1'
+        password: 'secret1'
+      user2:
+        principal: 'user2'
+        password: 'secret2'
+      user3:
+        principal: 'user3'
+        password: 'secret3'  
+    kafka_broker_custom_properties:
+        auto.create.topics.enable: false  
+        num.partitions: 1
+        min.insync.replicas: 1
+        default.replication.factor: 1
+        offsets.topic.replication.factor: 1
+        #num.partitions: 4
+        #min.insync.replicas: 3
+        #default.replication.factor: 6
+        #offsets.topic.replication.factor: 6   
+        log.retention.ms: 21600000  
+        authorizer.class.name: "kafka.security.authorizer.AclAuthorizer"
+        allow.everyone.if.no.acl.found: "true"
+        super.users: "User:kafka;User:schema-registry;User:control-center;User:kafka-rest;User:user3"  
+        replica.selector.class: org.apache.kafka.common.replica.RackAwareReplicaSelector  
+        confluent.balancer.enable: true
+        confluent.balancer.heal.uneven.load.trigger: ANY_UNEVEN_LOAD
+        confluent.balancer.heal.broker.failure.threshold.ms: 360000
+        confluent.log.placement.constraints: '{"version": 2,"replicas": [{"count": 1,"constraints": {"rack": "us-east-1a"
+}},{"count": 1,"constraints": {"rack": "us-east-1b"}}]}'   
+      #confluent.log.placement.constraints: '{"version": 2,"replicas": [{"count": 2,"constraints": {"rack": "us-east-1a"
+      #}},{"count": 2,"constraints": {"rack": "us-east-1b"}}],"observers": [{"count": 1,"constraints": {"rack": "us-east-1a"}},
+      #{"count": 1,"constraints": {"rack": "us-east-1b"}}],"observerPromotionPolicy":"under-min-isr"}'
+  #confluent.offsets.topic.placement.constraints: '{"version": 2,"replicas": [{"count": 2,"constraints": {"rack": "us-east-1a"
+  #}},{"count": 2,"constraints": {"rack": "us-east-1b"}}],"observers": [{"count": 1,"constraints": {"rack": "us-east-1a"}},
+  #{"count": 1,"constraints": {"rack": "us-east-1b"}}],"observerPromotionPolicy":"under-min-isr"}'
+  #confluent.transaction.state.log.placement.constraints: '{"version": 2,"replicas": [{"count": 2,"constraints": {"rack": "us-east-1a"
+  #}},{"count": 2,"constraints": {"rack": "us-east-1b"}}],"observers": [{"count": 1,"constraints": {"rack": "us-east-1a"}},
+  #{"count": 1,"constraints": {"rack": "us-east-1b"}}],"observerPromotionPolicy":"under-min-isr"}'
+
+zookeeper:
+  hosts:
+    zookeeper-0.rrchakdc1.ans.test.io:
+       zookeeper_id: 1
+
+kafka_broker:
+  hosts:
+    kafka-0.rrchakdc1.ans.test.io:
+       broker_id: 1
+       kafka_broker_custom_properties:
+          broker.rack: us-east-1a
+#   kafka-1.rrchakdc1.ans.test.io:
+   #   broker_id: 2
+   #    kafka_broker_custom_properties:
+   #      broker.rack: us-east-1a
+  # kafka-2.rrchakdc1.ans.test.io:
+  #     broker_id: 3
+  #     kafka_broker_custom_properties:
+  #       broker.rack: us-east-1a
+ #  kafka-0.rrchakdc2.ans.test.io:
+ #     broker_id: 4
+ #     kafka_broker_custom_properties:
+ #        broker.rack: us-east-1b
+#   kafka-1.rrchakdc2.ans.test.io:
+  #    broker_id: 5
+  #     kafka_broker_custom_properties:
+  #       broker.rack: us-east-1b
+#  kafka-2.rrchakdc2.ans.test.io:   
+#       broker_id: 6
+#       kafka_broker_custom_properties:
+#         broker.rack: us-east-1b
+
+schema_registry:
+  #vars:
+  #  schema_registry_group: cgi_sr_grp
+  #   schema_registry_custom_properties:
+  #     kafkastore.topic: _schemas_mrc1
+  #     leader.eligibility: true
+  #     schema.registry.group.id: 1
+      #host.name: localhost  
+  hosts:
+    #kafka-0.rrchakdc2.ans.test.io:  
+      # schema_registry_custom_properties:
+      # leader.eligibility: false
+    #kafka-1.rrchakdc2.ans.test.io:  
+      #schema_registry_custom_properties:
+      # leader.eligibility: false
+    schema-0.rrchakdc1.ans.test.io:
+       #schema_registry_custom_properties:
+         #  leader.eligibility: true
+         #  host.name: kafka-0.rrchakdc1.ans.test.io
+
+
+control_center:
+  vars:
+    control_center_custom_properties:
+       confluent.controlcenter.id: 1
+       confluent.controlcenter.command.topic: _confluent_command_1
+       confluent.controlcenter.internal.topics.retention.ms: 14400000
+       confluent.metrics.topic.retention.ms: 14400000
+       confluent.monitoring.interceptor.topic.retention.ms: 14400000   
+  hosts:
+    controlcenter-0.rrchakdc1.ans.test.io:
+    #kafka-0.rrchakdc2.ans.test.io: 
+
+#kafka_rest:
+  ## To set variables on all kafka_rest hosts, use the vars block here
+##  vars:
+#   kafka_rest_custom_properties:
+#      kafka.rest.authentication.method: BASIC
+#      kafka.rest.authentication.realm: KafkaRest
+  #   ## To configure Rest Proxy to run as a custom user, uncomment below
+  #   kafka_rest_user: custom-user
+  #   kafka_rest_group: custom-group
+  #
+  #   ## To copy files to kafka_rest hosts, set this list below
+  #   kafka_rest_copy_files:
+  #     - source_path: /path/to/file.txt
+  #       destination_path: /tmp/file.txt
+  # hosts:
+  #  kafka-2.rrchakdc1.ans.test.io:

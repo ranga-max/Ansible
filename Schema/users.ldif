@@ -1,0 +1,124 @@
+dn: cn=kafkagrp,dc=confluent,dc=io
+cn: kafkagrp
+gidnumber: 500
+objectclass: posixGroup
+objectclass: top
+
+dn: cn=mds,dc=confluent,dc=io
+cn: mds
+gidnumber: 500
+givenname: mds
+homedirectory: /home/users/mds
+objectclass: inetOrgPerson
+objectclass: posixAccount
+objectclass: top
+sn: mds
+uid: mds
+uidnumber: 1000
+userpassword: mds-secret
+
+dn: cn=sr,dc=confluent,dc=io
+cn: sr
+gidnumber: 500
+givenname: sr
+homedirectory: /home/users/sr
+objectclass: inetOrgPerson
+objectclass: posixAccount
+objectclass: top
+sn: sr
+uid: sr
+uidnumber: 1001
+userpassword: sr-secret
+
+dn: cn=c3,dc=confluent,dc=io
+cn: c3
+gidnumber: 500
+givenname: c3
+homedirectory: /home/users/c3
+objectclass: inetOrgPerson
+objectclass: posixAccount
+objectclass: top
+sn: c3
+uid: c3
+uidnumber: 1002
+userpassword: c3-secret
+
+dn: cn=kafka,dc=confluent,dc=io
+cn: kafka
+gidnumber: 500
+givenname: kafka
+homedirectory: /home/users/kafka
+objectclass: inetOrgPerson
+objectclass: posixAccount
+objectclass: top
+sn: kafka
+uid: kafka
+uidnumber: 1003
+userpassword: kafka-secret
+
+dn: cn=ksql,dc=confluent,dc=io
+cn: ksql
+gidnumber: 500
+givenname: ksql
+homedirectory: /home/users/ksql
+objectclass: inetOrgPerson
+objectclass: posixAccount
+objectclass: top
+sn: ksql
+uid: ksql
+uidnumber: 1004
+userpassword: ksql-secret
+
+dn: cn=connect,dc=confluent,dc=io
+cn: connect
+gidnumber: 500
+givenname: connect
+homedirectory: /home/users/connect
+objectclass: inetOrgPerson
+objectclass: posixAccount
+objectclass: top
+sn: connect
+uid: connect
+uidnumber: 1005
+userpassword: connect-secret
+
+dn: cn=krp,dc=confluent,dc=io
+cn: krp
+gidnumber: 500
+givenname: connect
+homedirectory: /home/users/krp
+objectclass: inetOrgPerson
+objectclass: posixAccount
+objectclass: top
+sn: krp
+uid: krp
+uidnumber: 1006
+userpassword: krp-secret
+
+dn: cn=rest,dc=confluent,dc=io
+cn: rest
+gidnumber: 500
+givenname: connect
+homedirectory: /home/users/rest
+objectclass: inetOrgPerson
+objectclass: posixAccount
+objectclass: top
+sn: rest
+uid: rest
+uidnumber: 1007
+userpassword: rest-secret
+
+
+dn: cn=rang,dc=confluent,dc=io
+cn: rang
+gidnumber: 500
+givenname: connect
+homedirectory: /home/users/rang
+objectclass: inetOrgPerson
+objectclass: posixAccount
+objectclass: top
+sn: rang
+uid: rang
+uidnumber: 1008
+userpassword: rang-secret
+

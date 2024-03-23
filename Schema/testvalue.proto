@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+package com.mycorp.mynamespace;
+  
+/* Sample schema to help you get started. */
+  
+message SampleRecord {
+    int32  my_field1 = 1;
+    double  my_field2 = 2;
+    string  my_field3 = 3;
+}
