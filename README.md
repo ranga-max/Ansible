@@ -9,6 +9,9 @@ ldapadd -x -D "cn=admin,dc=confluent,dc=io" -w confluent -H ldap://localhost:391
 ldapsearch -x -D "cn=admin,dc=confluent,dc=io" -w confluent -H ldap://localhost:391 -LLL uid=* | grep uid: | cut -d: -f2 > results <br>
 ldapsearch -x -D "cn=admin,dc=confluent,dc=io" -w confluent -H ldap://localhost:391 -LLL uid=*
 
+###### Modify Users
+ldapmodify -x -v -D "cn=admin,dc=confluent,dc=io" -w confluent -H ldap://localhost:391 -f usersmodify.ldif
+
 ###### Generate your component SSL Certificate
 ./ansible_cert_without_prompt.sh kafka-0 true — First time genereate the root authority certificate
  ./ansible_cert_without_prompt.sh kafka-1 false
