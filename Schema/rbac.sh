@@ -1,5 +1,5 @@
-confluent login --ca-cert-path ./certs/ca-cert.pem --url https://kafka-0.rrchakdc1.ans.test.io:8090
-cluster_id_cmd=$(confluent cluster describe --ca-cert-path ./certs/ca-cert.pem --url https://kafka-0.rrchakdc1.ans.test.io:8090)
+confluent login --ca-cert-path ./certs/ca-cert.pem --url https://kafka-2.rrchakdc1.ans.test.io:8090
+cluster_id_cmd=$(confluent cluster describe --ca-cert-path ./certs/ca-cert.pem --url https://kafka-2.rrchakdc1.ans.test.io:8090)
 cluster_id=$(echo $cluster_id_cmd | awk '{ print $12 }')
 mip=192.168.75.7
 confluent cluster unregister --cluster-name "SrDev" 
@@ -21,3 +21,5 @@ confluent iam rbac role-binding create --principal User:connect --role SystemAdm
 confluent iam rbac role-binding create --principal User:connect --role SystemAdmin --kafka-cluster-id $cluster_id
 confluent iam rbac role-binding create --principal User:ksql --role SystemAdmin --kafka-cluster-id $cluster_id
 confluent iam rbac role-binding create --principal User:sr --role SystemAdmin --kafka-cluster-id $cluster_id
+
+
