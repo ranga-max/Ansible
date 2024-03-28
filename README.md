@@ -12,6 +12,23 @@ ldapsearch -x -D "cn=admin,dc=confluent,dc=io" -w confluent -H ldap://localhost:
 ###### Modify Users
 ldapmodify -x -v -D "cn=admin,dc=confluent,dc=io" -w confluent -H ldap://localhost:391 -f usersmodify.ldif
 
+
+###### Sample audit log metadata commands
+
+*confluent audit-log config describe* <br>
+*confluent audit-log config update < audit-configs.json* <br>
+*confluent audit-log config update --force < audit-configs.json* <br>
+*confluent audit-log route list -r "crn:///kafka=*/topic=hr-*"* <br>
+*confluent audit-log route lookup "crn:///kafka=3QhLzB7dT5a3NN113rdmvA"* <br>
+
+###### Sample Ansible Playbook and adhoc commands
+
+*ansible-playbook -i mrchostsrbacmetric.yml confluent.platform.all* <br>
+*ansible all -i mrchostsrbacdata.yml -m shell -a  'rm -R /var/lib/kafka; rm -R /opt/confluent; rm -R /var/lib/zookeeper'* <br>
+*ansible all -i mrchostsrbacmetric.yml -m shell -a  'rm -R /etc/kafka; rm -R /etc/confluent*/; rm -R /etc/schema-registry*/;'* <br>
+*ansible localhost -m shell -a  'ssh kafka-0.rrchakdc1.ans.test.io; ssh kafka-1.rrchakdc1.ans.test.io;'* <br>
+
+
 ###### Generate your component SSL Certificate
 ./ansible_cert_without_prompt.sh kafka-0 true — First time genereate the root authority certificate
  ./ansible_cert_without_prompt.sh kafka-1 false
