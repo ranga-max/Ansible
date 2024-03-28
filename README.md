@@ -19,7 +19,7 @@ ldapmodify -x -v -D "cn=admin,dc=confluent,dc=io" -w confluent -H ldap://localho
 *confluent audit-log config update < audit-configs.json* <br>
 *confluent audit-log config update --force < audit-configs.json* <br>
 *confluent audit-log route list -r "crn:///kafka=*/topic=hr-*"* <br>
-*confluent audit-log route lookup "crn:///kafka=3QhLzB7dT5a3NN113rdmvA"* <br>
+*confluent audit-log route lookup "crn:///kafka=<kafka-cluster-id>"* <br>
 
 ###### Sample Ansible Playbook and adhoc commands
 
