@@ -13,6 +13,14 @@ ldapsearch -x -D "cn=admin,dc=confluent,dc=io" -w confluent -H ldap://localhost:
 ldapmodify -x -v -D "cn=admin,dc=confluent,dc=io" -w confluent -H ldap://localhost:391 -f usersmodify.ldif
 
 
+###### Observation
+
+Noticed that could install community.general only from ansible-core 2.13.9
+
+python3 -m pip install --user ansible-core==2.13.9 <br>
+ansible-galaxy collection install community.general 
+
+
 ###### Sample audit log metadata commands
 
 *confluent audit-log config describe* <br>
