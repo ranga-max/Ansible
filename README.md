@@ -12,6 +12,13 @@ ldapsearch -x -D "cn=admin,dc=confluent,dc=io" -w confluent -H ldap://localhost:
 ###### Modify Users
 ldapmodify -x -v -D "cn=admin,dc=confluent,dc=io" -w confluent -H ldap://localhost:391 -f usersmodify.ldif
 
+###### Login in to Zookeeper Shell to Query Cluster/Broker/Topic Data
+
+zookeeper-shell kafka-0.rrchakdc1.ans.test.io:2182 -zk-tls-config-file zookeeper-tls-client.properties <br>
+get /config/brokers/<default>  <br>
+ls /config/brokers/<default> --> to list <br>
+ls /brokers/ids <br>
+get /controller <br>
 
 ###### Observation
 
