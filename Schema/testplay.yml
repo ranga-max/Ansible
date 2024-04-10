@@ -1,0 +1,25 @@
+---
+- name: Test Play Book
+  gather_facts: false
+  hosts: localhost
+  #environment: "{{ proxy_env }}"
+
+  vars:        
+    root_cert_name: "teststore.jks"
+    keystore_path: "/home/ubuntu/Ansible/Schema/certs/kafka-0.truststore.jks"  
+
+  tasks:
+
+   - name: Get the extension of the file
+     set_fact:
+       rootcertext: "{{ root_cert_name | splitext | list | last  }}" 
+
+   - debug:
+       var: rootcertext
+
+   - name: Determine TrustStore Key Alias
+     shell: keytool -list -v -keystore {{ keystore_path  }} -storepass confluent | grep -i alias | cut -d ' ' -f 3
+     register: rootalias      
+
+   - debug:
+       var: rootalias     

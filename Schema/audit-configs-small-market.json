@@ -1,0 +1,32 @@
+{
+  "destinations": {
+    "topics": {
+      "confluent-audit-log-events": {
+        "retention_ms": 7776000000
+      },
+      "confluent-audit-log-events_market": {
+        "retention_ms": 7776000000
+      }
+    }
+  },
+  "default_topics": {
+    "allowed": "confluent-audit-log-events",
+    "denied": "confluent-audit-log-events"
+  },
+  "routes": {
+    "crn:///kafka=*/topic=app-data-*": {
+      "produce": {
+        "allowed": "confluent-audit-log-events_market",
+        "denied": "confluent-audit-log-events_market"
+      },
+      "consume": {
+        "allowed": "confluent-audit-log-events_market",
+        "denied": "confluent-audit-log-events_market"
+      },
+      "describe": {
+        "allowed": "",
+        "denied": ""
+      }
+    }
+  }
+}

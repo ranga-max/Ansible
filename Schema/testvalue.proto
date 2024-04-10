@@ -1,4 +1,4 @@
-syntax = "proto3";
+syntax = "troto3";
 
 package com.mycorp.mynamespace;
   

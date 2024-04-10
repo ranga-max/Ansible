@@ -1,0 +1,62 @@
+{
+  "destinations": {
+    "topics": {
+      "confluent-audit-log-events": {
+        "retention_ms": 7776000000
+      },
+      "confluent-audit-log-events_hr": {
+        "retention_ms": 7776000000
+      },
+      "confluent-audit-log-events_hr_data": {
+        "retention_ms": 7776000000
+      },
+      "confluent-audit-log-events_hr_metric": {
+        "retention_ms": 7776000000
+      }
+    }
+  },
+  "excluded_principals": [
+    "User:mds",
+    "User:rang"
+  ],
+  "default_topics": {
+    "allowed": "confluent-audit-log-events",
+    "denied": "confluent-audit-log-events"
+  },
+  "routes": {
+    "crn:///kafka=*/topic=hr-*": {
+      "produce": {
+        "allowed": "confluent-audit-log-events_hr",
+        "denied": "confluent-audit-log-events_hr"
+      },
+      "consume": {
+        "allowed": "confluent-audit-log-events_hr",
+        "denied": "confluent-audit-log-events_hr"
+      }
+    },
+    "crn:///kafka=3QhLzB7dT5a3NN113rdmvA/topic=hr-data-*": {
+      "produce": {
+        "allowed": "confluent-audit-log-events_hr_data",
+        "denied": "confluent-audit-log-events_hr_data"
+      },
+      "consume": {
+        "allowed": "confluent-audit-log-events_hr_data",
+        "denied": "confluent-audit-log-events_hr_data"
+      }
+    },
+    "crn:///kafka=_y9KMJZwR2mma4HHe7QYfg/topic=hr-metric-*": {
+      "produce": {
+        "allowed": "confluent-audit-log-events_hr_metric",
+        "denied": "confluent-audit-log-events_hr_metric"
+      },
+      "consume": {
+        "allowed": "confluent-audit-log-events_hr_metric",
+        "denied": "confluent-audit-log-events_hr_metric"
+      }
+    }
+  },
+  "metadata": {
+    "resource_version": "L38PPqakrbU5zX1bqdjz_A",
+    "modified_since": "2024-03-27T12:22:46Z"
+  }
+}

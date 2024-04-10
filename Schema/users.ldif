@@ -112,7 +112,7 @@ userpassword: rest-secret
 dn: cn=rang,dc=confluent,dc=io
 cn: rang
 gidnumber: 500
-givenname: connect
+givenname: rang
 homedirectory: /home/users/rang
 objectclass: inetOrgPerson
 objectclass: posixAccount
@@ -121,4 +121,30 @@ sn: rang
 uid: rang
 uidnumber: 1008
 userpassword: rang-secret
+
+dn: cn=admin,dc=confluent,dc=io
+cn: admin
+gidNumber: 500
+givenName: admin
+homeDirectory: /home/users/admin
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+sn: admin
+uid: admin
+uidNumber: 1009
+userPassword: admin-secret
+
+dn: cn=client,dc=confluent,dc=io
+cn: client
+gidNumber: 500
+givenName: client
+homeDirectory: /home/users/client
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+sn: client
+uid: client
+uidNumber: 1010
+userPassword: client-secret
 

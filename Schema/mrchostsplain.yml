@@ -7,6 +7,8 @@ all:
     ansible_become: true
     installation_method: archive
     confluent_archive_file_source: /home/ubuntu/confluent-7.3.1.zip
+    #confluent_package_version: 7.3.2
+    #binary_base_path: /opt/confluent/confluent-7.3.2
     confluent_archive_file_remote: false  
     deployment_strategy: parallel  
       #validate_hosts: false  

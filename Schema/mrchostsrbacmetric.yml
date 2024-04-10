@@ -8,6 +8,7 @@ all:
     installation_method: archive
     #installation_method: package   
     confluent_archive_file_source: /home/ubuntu/confluent-7.4.4.zip
+    confluent_package_version: 7.4.4
     binary_base_path: /opt/confluent/confluent-7.4.4
     confluent_archive_file_remote: false  
     deployment_strategy: parallel 
@@ -135,8 +136,8 @@ all:
         ldap.user.memberof.attribute.pattern: CN=(.*),dc=confluent,dc=io
         ldap.user.object.class: inetOrgPerson
         ldap.user.search.scope: 2
-        confluent.basic.auth.credentials.source: USER_INFO
-        confluent.basic.auth.user.info: "alice:alice-secret"
+        #confluent.basic.auth.credentials.source: USER_INFO
+        #confluent.basic.auth.user.info: "sr:sr-secret"
         # Special callback for ldap listener
         listener.name.client.plain.sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required;
         listener.name.client.plain.sasl.server.callback.handler.class: io.confluent.security.auth.provider.ldap.LdapAuthenticateCallbackHandler
@@ -226,7 +227,9 @@ control_center:
        confluent.controlcenter.kafka.tenantcluster.ssl.keystore.location: "{{ control_center_keystore_path   }}"
        confluent.controlcenter.kafka.tenantcluster.ssl.keystore.password: "{{ control_center_keystore_storepass   }}"
        confluent.controlcenter.kafka.tenantcluster.ssl.key.password:  "{{ control_center_keystore_keypass   }}"  
-       confluent.controlcenter.kafka.schema.registry.tenantcluster.url: https://kafka-0.rrchakdc1.ans.test.io:8081,https://kafka-1.rrchakdc1.ans.test.io:8081
+       confluent.controlcenter.schema.registry.tenantcluster.url: https://kafka-0.rrchakdc1.ans.test.io:8081,https://kafka-1.rrchakdc1.ans.test.io:8081
+       confluent.controlcenter.schema.registry.tenantcluster.ssl.truststore.location: "{{ control_center_truststore_path   }}"
+       confluent.controlcenter.schema.registry.tenantcluster.truststore.password: "{{ control_center_truststore_storepass   }}"
   hosts:
     #controlcenter-0.rrchakdc1.ans.test.io:
     kafka-2.rrchakdc1.ans.test.io: 

@@ -1,25 +1,30 @@
 schemas:
        topics:
-         - name: test
-           value:
+         #- name: test
+         #  value:
             #compatibility: "FORWARD"
             #schema_delete_curr: true
+            #schema_delete_all: true  
             #schema_update: false  
-             schema_file_src_path: "/home/ubuntu/Schema/testvalue.avsc" 
-           key:
-             schema_file_src_path: "/home/ubuntu/Schema/testvalue_v1.avsc"   
+         #     schema_file_src_path: "/home/ubuntu/Schema/testvalue.avsc" 
+         #  key:
+             #schema_delete_all: true
+         #   schema_file_src_path: "/home/ubuntu/Schema/testvalue.avsc"   
          - name: test2
            value:
-             schema_delete_curr: true
-             schema_file_src_path: "/home/ubuntu/Schema/testvalue.proto"
-           key:
-             schema_file_src_path: "/home/ubuntu/Schema/testvalue.proto"   
-         - name: test3
-           value:
-             schema_file_src_path: "/home/ubuntu/Schema/testvalue.json"
+             #schema_delete_all: true
+            #schema_delete_curr: true
+              schema_file_src_path: "/home/ubuntu/Schema/testvalue.proto"
            key:
              #schema_delete_all: true
-             compatibility: "FORWARD"
-             schema_file_src_path: "/home/ubuntu/Schema/testvalue.json"   
+              schema_file_src_path: "/home/ubuntu/Schema/testvalue.proto"   
+        #- name: test3
+        #   value:
+             #schema_delete_all: true
+        #     schema_file_src_path: "/home/ubuntu/Schema/testvalue.json"
+        #   key:
+             #schema_delete_all: true
+        #     compatibility: "FORWARD"
+        #     schema_file_src_path: "/home/ubuntu/Schema/testvalue.json"   
 
 

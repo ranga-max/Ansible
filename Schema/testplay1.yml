@@ -1,0 +1,82 @@
+---
+- name: Test Play Book
+  gather_facts: false
+  hosts: localhost
+  #environment: "{{ proxy_env }}"
+
+  vars:        
+    root_cert_name: "teststore.jks"
+    keystore_path: "/home/ubuntu/Ansible/Schema/certs/kafka-0.truststore.jks"  
+    inventory_hostname: "test.staging.domain.com"
+
+  tasks:
+
+   - name: Set hostname (minus the domain)
+     debug: 
+       msg: "{{ inventory_hostname | regex_replace('^([^.]*).*', '\\1') }}" 
+
+   - name: Slurp var from file
+    # delegate_to: localhost # if necessary
+     slurp:
+      src: "/home/ubuntu/Ansible/Schema/testvalue.avsc"
+     register: file_content
+
+   - name: Decode
+     set_fact:
+      file_content_decoded: "{{ file_content['content'] | b64decode }}"
+
+   - name: Decode
+     set_fact:
+      file_content_decoded1: '{{ file_content_decoded | to_json | from_json }}'
+
+
+   - name: Show var
+     debug:
+       msg: "{{ file_content_decoded1 }}"
+
+   - name: Manage Rolebindings For Principal, Scope and Set of resources
+     uri:
+       url: "https://kafka-2.rrchakdc1.ans.test.io:8081/subjects/testz-value/versions"
+       method: "POST"
+       validate_certs: false
+       force_basic_auth: true
+       url_username: "sr"
+       url_password: "sr-secret"
+       headers:
+        Content-Type: application/vnd.schemaregistry.v1+json
+       body_format: json
+       status_code: 200
+       body:  "{ \"schemaType\": \"AVRO\", \"schema\": \"{{file_content_decoded | to_json | replace('\"','\\\"') }}\" }"
+       return_content: yes
+
+   - name: Show var
+     debug:
+       msg: "{{ file_content_decoded }}"
+
+   - name: Transform
+     shell: |
+          echo {{ file_content_decoded  }} | sed 's/"/\\"/g'  >> tmp.txt
+          #sed -i 's/"/\\"/g'  <<< {{ file_content_decoded  }}
+          #echo sed -i 's/"/\\"/g' $tmpfile
+          #sed -i '1s/^/{"schema": "/' $tmpfile
+          #sed -i '$ a "} ' $tmpfile
+     register:  file_content_transformed  
+   
+   - name: Transform1
+     shell: |
+          tmpfile=$(mktemp)
+          cp /home/ubuntu/Ansible/Schema/testvalue.avsc $tmpfile
+          sed -i 's/"/\\"/g' $tmpfile
+          sed -i '1s/^/{"schema": "/' $tmpfile
+          sed -i '$ a "} ' $tmpfile
+          cat $tmpfile
+     register:  file_content_transformed1
+
+   - name: Show var
+     debug:
+       msg: "{{ file_content_transformed }}"     
+
+   - name: Show var
+     debug:
+       msg: "{{ file_content['content'] | b64decode }}" 
+

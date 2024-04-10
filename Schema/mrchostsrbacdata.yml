@@ -8,6 +8,7 @@ all:
     installation_method: archive
     confluent_archive_file_source: /home/ubuntu/confluent-7.4.4.zip
     binary_base_path: /opt/confluent/confluent-7.4.4
+    confluent_package_version: 7.4.4
     confluent_archive_file_remote: false
     #deployment_strategy: parallel
     deployment_strategy: rolling  
@@ -166,7 +167,7 @@ all:
         ldap.authorizer.ssl.truststore.location: "{{ kafka_broker_truststore_path }}"
         ldap.authorizer.ssl.truststore.password:  "{{ kafka_broker_truststore_storepass }}"
         confluent.basic.auth.credentials.source: USER_INFO
-        confluent.basic.auth.user.info: "alice:alice-secret"
+        confluent.basic.auth.user.info: "sr:sr-secret"
         # Special callback for ldap listener
         listener.name.client.plain.sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required;
         listener.name.client.plain.sasl.server.callback.handler.class: io.confluent.security.auth.provider.ldap.LdapAuthenticateCallbackHandler

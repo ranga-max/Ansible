@@ -1,0 +1,56 @@
+{
+  "destinations": {
+    "topics": {
+      "confluent-audit-log-events": {
+        "retention_ms": 7776000000
+      },
+      "confluent-audit-log-events_sales": {
+        "retention_ms": 7776000000
+      }
+    }
+  },
+  "excluded_principals": [
+    "User:mds",
+    "User:rang"
+  ],
+  "default_topics": {
+    "allowed": "confluent-audit-log-events",
+    "denied": "confluent-audit-log-events"
+  },
+  "routes": {
+    "crn:///kafka=*/topic=sales-in-*": {
+      "produce": {
+        "allowed": "confluent-audit-log-events_sales",
+        "denied": "confluent-audit-log-events_sales"
+      },
+      "consume": {
+        "allowed": "confluent-audit-log-events_sales",
+        "denied": "confluent-audit-log-events_sales"
+      }
+    },
+    "crn:///kafka=3QhLzB7dT5a3NN113rdmvA/topic=sales-data-*": {
+      "produce": {
+        "allowed": "confluent-audit-log-events_sales",
+        "denied": "confluent-audit-log-events_sales"
+      },
+      "consume": {
+        "allowed": "confluent-audit-log-events_sales",
+        "denied": "confluent-audit-log-events_sales"
+      }
+    },
+    "crn:///kafka=_y9KMJZwR2mma4HHe7QYfg/topic=sales-metric-*": {
+      "produce": {
+        "allowed": "confluent-audit-log-events_sales",
+        "denied": "confluent-audit-log-events_sales"
+      },
+      "consume": {
+        "allowed": "confluent-audit-log-events_sales",
+        "denied": "confluent-audit-log-events_sales"
+      }
+    }
+  },
+  "metadata": {
+    "resource_version": "L38PPqakrbU5zX1bqdjz_A",
+    "modified_since": "2024-03-27T12:22:46Z"
+  }
+}

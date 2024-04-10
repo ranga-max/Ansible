@@ -6,8 +6,9 @@ all:
     ansible_user: ubuntu
     ansible_become: true
     installation_method: archive
-    confluent_archive_file_source: /home/ubuntu/confluent-7.3.1.zip
-    binary_base_path: /opt/confluent/confluent-7.3.1
+    confluent_archive_file_source: /home/ubuntu/confluent-7.3.2.zip
+    confluent_package_version: 7.3.2  
+    binary_base_path: /opt/confluent/confluent-7.3.2
     confluent_archive_file_remote: false  
     deployment_strategy: parallel 
     ssl_enabled: true
@@ -29,7 +30,7 @@ all:
     jmxexporter_url_remote: false
     jmxexporter_jar_url: /home/ubuntu/jmx_prometheus_javaagent-0.12.0.jar  
     rbac_enabled: true
-    secrets_protection_enabled: true
+    #secrets_protection_enabled: true
     confluent_cli_download_enabled: false   
     #secrets_protection_masterkey: abC12DE+3fG45Hi67J8KlmnOpQr9s0Tuv+w1x2y3zab=
     #rbac_component_additional_system_admins: [ user1 ]

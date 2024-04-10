@@ -160,6 +160,16 @@
   when: (item.value is defined and item.value.schema_type == "avro" and item.value.schema_update|bool
          and not (item.value.schema_delete_all|bool or item.value.schema_delete_curr|bool))  
 
+#Try URI Module for Registration
+
+- name: Create topics 
+  include_tasks: schemas_create.yml
+  vars:
+    topics_in: "{{ combined_topics }}"
+  when: (item.value is defined and item.value.schema_type == "avro" and item.value.schema_update|bool
+         and not (item.value.schema_delete_all|bool or item.value.schema_delete_curr|bool))
+
+         
 - name: Register @topic level necessary AVRO schemas based on the input schemas file - KEY part
   shell: |
           src_file_path_val={{ item.key.schema_file_src_path }}
@@ -191,7 +201,7 @@
           sed -i '$ a "} ' $tmpfile
           curl -X POST --data @$tmpfile -H "Content-Type: application/vnd.schemaregistry.v1+json" \
           {{ curl_subjects_api_url|trim }}/${topic}-value/versions {{ curl_parameter_str  }}
-          rm $tmpfile
+          #rm $tmpfile
   register: curl_result
   with_items: "{{ combined_topics }}"
   failed_when: curl_result.stdout == ""
