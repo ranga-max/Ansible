@@ -2,10 +2,10 @@ schemas:
        record_schemas:
          - record_name: "com.mycorp.mynamespace.recordonlyavro"
            schema_file_src_path: "/home/ubuntu/Schema/testvalue.avsc"
-           schema_delete_all: true  
+          #schema_delete_all: true  
          - record_name: "com.mycorp.mynamespace.recordonlyproto"
            schema_file_src_path: "/home/ubuntu/Schema/testvalue.proto"
-           schema_delete_curr: true  
+          #schema_delete_curr: true  
          - record_name: "com.mycorp.mynamespace.recordonlyjson"
            schema_file_src_path: "/home/ubuntu/Schema/testvalue.json"
        topics:
@@ -14,7 +14,7 @@ schemas:
              schema_file_src_path: "/home/ubuntu/Schema/testvalue.avsc"
            value:
              schema_file_src_path: "/home/ubuntu/Schema/testvalue.avsc"  
-             schema_delete_all: true # Optional Delete Switch you can add to delete  schema all versions for the subject/scope
+            #schema_delete_all: true # Optional Delete Switch you can add to delete  schema all versions for the subject/scope
              record_schemas:
                   - record_name: "com.mycorp.mynamespace.address"
                     schema_file_src_path: "/home/ubuntu/Schema/testvalue.avsc"
@@ -26,7 +26,7 @@ schemas:
                     schema_file_src_path: "/home/ubuntu/Schema/testvalue.proto"
            value:
              schema_file_src_path: "/home/ubuntu/Schema/testvalue.proto"   
-             schema_delete_curr: true # Optional Delete Switch you can add to delete  schema all versions for the subject/scope
+            #schema_delete_curr: true # Optional Delete Switch you can add to delete  schema all versions for the subject/scope
          - name: test3
            key:
              schema_file_src_path: "/home/ubuntu/Schema/testvalue.json"
@@ -35,7 +35,7 @@ schemas:
                   - record_name: "com.mycorp.mynamespace.address"
                     compatibilty: "FORWARD"
                     schema_file_src_path: "/home/ubuntu/Schema/testvalue.json"
-                    schema_delete_all: true  
+                      #schema_delete_all: true  
                   - record_name: "com.mycorp.mynamespace.occupation"
                     schema_file_src_path: "/home/ubuntu/Schema/testvalue.json"  
            value:

@@ -1,34 +1,68 @@
 schemas:
-- id: 4
-  schema: '{"type":"record","name":"sampleRecord","namespace":"com.mycorp.mynamespace","doc":"Sample
-    schema to help you get started.","fields":[{"name":"my_field1","type":"int","doc":"The
-    int type is a 32-bit signed integer."},{"name":"my_field2","type":"double","doc":"The
-    double type is a double precision (64-bit) IEEE 754 floating-point number."},{"name":"my_field3","type":"string","doc":"The
-    string is a unicode character sequence."},{"name":"my_field4","type":"string","doc":"The
-    string is a unicode character sequence.","default":null}]}'
-  subject: test-key
-  version: 2
+- id: 2
+  schema: "syntax = \"proto3\";\npackage com.mycorp.mynamespace;\n\nmessage SampleRecord
+    {\n  int32 my_field1 = 1;\n  double my_field2 = 2;\n  string my_field3 = 3;\n}\n"
+  schemaType: PROTOBUF
+  subject: test2-com.mycorp.mynamespace.address-key
+  version: 3
 - id: 3
+  schema: '{"$schema":"http://json-schema.org/draft-07/schema#","$id":"http://example.com/myURI.schema.json","title":"SampleRecord","description":"Sample
+    schema to help you get started.","type":"object","additionalProperties":false,"properties":{"myField1":{"type":"integer","description":"The
+    integer type is used for integral numbers."},"myField2":{"type":"number","description":"The
+    number type is used for any numeric type, either integers or floating point numbers."},"myField3":{"type":"string","description":"The
+    string type is used for strings of text."}}}'
+  schemaType: JSON
+  subject: test3-com.mycorp.mynamespace.address-key
+  version: 4
+- id: 1
   schema: '{"type":"record","name":"sampleRecord","namespace":"com.mycorp.mynamespace","doc":"Sample
     schema to help you get started.","fields":[{"name":"my_field1","type":"int","doc":"The
     int type is a 32-bit signed integer."},{"name":"my_field2","type":"double","doc":"The
     double type is a double precision (64-bit) IEEE 754 floating-point number."},{"name":"my_field3","type":"string","doc":"The
     string is a unicode character sequence."}]}'
   subject: test-value
+  version: 6
+- id: 3
+  schema: '{"$schema":"http://json-schema.org/draft-07/schema#","$id":"http://example.com/myURI.schema.json","title":"SampleRecord","description":"Sample
+    schema to help you get started.","type":"object","additionalProperties":false,"properties":{"myField1":{"type":"integer","description":"The
+    integer type is used for integral numbers."},"myField2":{"type":"number","description":"The
+    number type is used for any numeric type, either integers or floating point numbers."},"myField3":{"type":"string","description":"The
+    string type is used for strings of text."}}}'
+  schemaType: JSON
+  subject: test3-com.mycorp.mynamespace.occupation-key
   version: 3
-- id: 5
-  schema: "syntax = \"proto3\";\npackage com.mycorp.mynamespace;\n\nmessage SampleRecord
-    {\n  int32 my_field1 = 1;\n  double my_field2 = 2;\n  string my_field3 = 3;\n}\n"
-  schemaType: PROTOBUF
-  subject: test2-key
-  version: 2
-- id: 5
+- id: 1
+  schema: '{"type":"record","name":"sampleRecord","namespace":"com.mycorp.mynamespace","doc":"Sample
+    schema to help you get started.","fields":[{"name":"my_field1","type":"int","doc":"The
+    int type is a 32-bit signed integer."},{"name":"my_field2","type":"double","doc":"The
+    double type is a double precision (64-bit) IEEE 754 floating-point number."},{"name":"my_field3","type":"string","doc":"The
+    string is a unicode character sequence."}]}'
+  subject: com.mycorp.mynamespace.recordonlyavro
+  version: 3
+- id: 2
   schema: "syntax = \"proto3\";\npackage com.mycorp.mynamespace;\n\nmessage SampleRecord
     {\n  int32 my_field1 = 1;\n  double my_field2 = 2;\n  string my_field3 = 3;\n}\n"
   schemaType: PROTOBUF
   subject: test2-value
+  version: 5
+- id: 3
+  schema: '{"$schema":"http://json-schema.org/draft-07/schema#","$id":"http://example.com/myURI.schema.json","title":"SampleRecord","description":"Sample
+    schema to help you get started.","type":"object","additionalProperties":false,"properties":{"myField1":{"type":"integer","description":"The
+    integer type is used for integral numbers."},"myField2":{"type":"number","description":"The
+    number type is used for any numeric type, either integers or floating point numbers."},"myField3":{"type":"string","description":"The
+    string type is used for strings of text."}}}'
+  schemaType: JSON
+  subject: test3-com.mycorp.mynamespace.occupation-value
   version: 3
-- id: 6
+- id: 1
+  schema: '{"type":"record","name":"sampleRecord","namespace":"com.mycorp.mynamespace","doc":"Sample
+    schema to help you get started.","fields":[{"name":"my_field1","type":"int","doc":"The
+    int type is a 32-bit signed integer."},{"name":"my_field2","type":"double","doc":"The
+    double type is a double precision (64-bit) IEEE 754 floating-point number."},{"name":"my_field3","type":"string","doc":"The
+    string is a unicode character sequence."}]}'
+  subject: test5-key
+  version: 3
+- id: 3
   schema: '{"$schema":"http://json-schema.org/draft-07/schema#","$id":"http://example.com/myURI.schema.json","title":"SampleRecord","description":"Sample
     schema to help you get started.","type":"object","additionalProperties":false,"properties":{"myField1":{"type":"integer","description":"The
     integer type is used for integral numbers."},"myField2":{"type":"number","description":"The
@@ -36,8 +70,16 @@ schemas:
     string type is used for strings of text."}}}'
   schemaType: JSON
   subject: test3-key
-  version: 2
-- id: 6
+  version: 4
+- id: 1
+  schema: '{"type":"record","name":"sampleRecord","namespace":"com.mycorp.mynamespace","doc":"Sample
+    schema to help you get started.","fields":[{"name":"my_field1","type":"int","doc":"The
+    int type is a 32-bit signed integer."},{"name":"my_field2","type":"double","doc":"The
+    double type is a double precision (64-bit) IEEE 754 floating-point number."},{"name":"my_field3","type":"string","doc":"The
+    string is a unicode character sequence."}]}'
+  subject: test6-value
+  version: 3
+- id: 3
   schema: '{"$schema":"http://json-schema.org/draft-07/schema#","$id":"http://example.com/myURI.schema.json","title":"SampleRecord","description":"Sample
     schema to help you get started.","type":"object","additionalProperties":false,"properties":{"myField1":{"type":"integer","description":"The
     integer type is used for integral numbers."},"myField2":{"type":"number","description":"The
@@ -45,4 +87,66 @@ schemas:
     string type is used for strings of text."}}}'
   schemaType: JSON
   subject: test3-value
-  version: 2
+  version: 4
+- id: 1
+  schema: '{"type":"record","name":"sampleRecord","namespace":"com.mycorp.mynamespace","doc":"Sample
+    schema to help you get started.","fields":[{"name":"my_field1","type":"int","doc":"The
+    int type is a 32-bit signed integer."},{"name":"my_field2","type":"double","doc":"The
+    double type is a double precision (64-bit) IEEE 754 floating-point number."},{"name":"my_field3","type":"string","doc":"The
+    string is a unicode character sequence."}]}'
+  subject: test-com.mycorp.mynamespace.address-value
+  version: 3
+- id: 1
+  schema: '{"type":"record","name":"sampleRecord","namespace":"com.mycorp.mynamespace","doc":"Sample
+    schema to help you get started.","fields":[{"name":"my_field1","type":"int","doc":"The
+    int type is a 32-bit signed integer."},{"name":"my_field2","type":"double","doc":"The
+    double type is a double precision (64-bit) IEEE 754 floating-point number."},{"name":"my_field3","type":"string","doc":"The
+    string is a unicode character sequence."}]}'
+  subject: test-key
+  version: 4
+- id: 3
+  schema: '{"$schema":"http://json-schema.org/draft-07/schema#","$id":"http://example.com/myURI.schema.json","title":"SampleRecord","description":"Sample
+    schema to help you get started.","type":"object","additionalProperties":false,"properties":{"myField1":{"type":"integer","description":"The
+    integer type is used for integral numbers."},"myField2":{"type":"number","description":"The
+    number type is used for any numeric type, either integers or floating point numbers."},"myField3":{"type":"string","description":"The
+    string type is used for strings of text."}}}'
+  schemaType: JSON
+  subject: com.mycorp.mynamespace.recordonlyjson
+  version: 3
+- id: 2
+  schema: "syntax = \"proto3\";\npackage com.mycorp.mynamespace;\n\nmessage SampleRecord
+    {\n  int32 my_field1 = 1;\n  double my_field2 = 2;\n  string my_field3 = 3;\n}\n"
+  schemaType: PROTOBUF
+  subject: com.mycorp.mynamespace.recordonlyproto
+  version: 3
+- id: 3
+  schema: '{"$schema":"http://json-schema.org/draft-07/schema#","$id":"http://example.com/myURI.schema.json","title":"SampleRecord","description":"Sample
+    schema to help you get started.","type":"object","additionalProperties":false,"properties":{"myField1":{"type":"integer","description":"The
+    integer type is used for integral numbers."},"myField2":{"type":"number","description":"The
+    number type is used for any numeric type, either integers or floating point numbers."},"myField3":{"type":"string","description":"The
+    string type is used for strings of text."}}}'
+  schemaType: JSON
+  subject: test3-com.mycorp.mynamespace.address-value
+  version: 3
+- id: 2
+  schema: "syntax = \"proto3\";\npackage com.mycorp.mynamespace;\n\nmessage SampleRecord
+    {\n  int32 my_field1 = 1;\n  double my_field2 = 2;\n  string my_field3 = 3;\n}\n"
+  schemaType: PROTOBUF
+  subject: test2-key
+  version: 4
+- id: 1
+  schema: '{"type":"record","name":"sampleRecord","namespace":"com.mycorp.mynamespace","doc":"Sample
+    schema to help you get started.","fields":[{"name":"my_field1","type":"int","doc":"The
+    int type is a 32-bit signed integer."},{"name":"my_field2","type":"double","doc":"The
+    double type is a double precision (64-bit) IEEE 754 floating-point number."},{"name":"my_field3","type":"string","doc":"The
+    string is a unicode character sequence."}]}'
+  subject: test4-value
+  version: 3
+- id: 1
+  schema: '{"type":"record","name":"sampleRecord","namespace":"com.mycorp.mynamespace","doc":"Sample
+    schema to help you get started.","fields":[{"name":"my_field1","type":"int","doc":"The
+    int type is a 32-bit signed integer."},{"name":"my_field2","type":"double","doc":"The
+    double type is a double precision (64-bit) IEEE 754 floating-point number."},{"name":"my_field3","type":"string","doc":"The
+    string is a unicode character sequence."}]}'
+  subject: test4-key
+  version: 3
