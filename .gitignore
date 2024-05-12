@@ -1,4 +1,5 @@
 /Schema/hist*.txt
+/Schema/h*.txt
 /Schema/cmdhist*.txt
 /Schema/sr*.sh
 /Schema/jmx-monitoring-stacks/*
