@@ -41,12 +41,15 @@ ansible-galaxy collection install community.general
 *ansible-playbook -i mrchostsrbacmetric.yml confluent.platform.all* <br>
 *ansible all -i mrchostsrbacdata.yml -m shell -a  'rm -R /var/lib/kafka; rm -R /opt/confluent; rm -R /var/lib/zookeeper'* <br>
 *ansible all -i mrchostsrbacmetric.yml -m shell -a  'rm -R /etc/kafka; rm -R /etc/confluent*/; rm -R /etc/schema-registry*/;'* <br>
+*ansible all -i mrchostsrbacmetric.yml -m shell -a  'sudo apt install unzip'* <br>
 *ansible localhost -m shell -a  'ssh kafka-0.rrchakdc1.ans.test.io; ssh kafka-1.rrchakdc1.ans.test.io;'* <br>
+*ansible all -i mrchostsrbacmetric.yml -m copy -a 'src=<srcfolder>/ca-key.pem dest=/var/ssl/private'* <br>
 
 
 ###### Generate your component SSL Certificate
 ./ansible_cert_without_prompt.sh kafka-0 true — First time genereate the root authority certificate
- ./ansible_cert_without_prompt.sh kafka-1 false
+ ./ansible_cert_without_prompt.sh kafka-1 false<br>
+ keytool -list -v     -keystore kafka-1.keystore.jks     -storepass confluent
 
 ###### For Secret Protection 
 confluent secret master-key generate \
