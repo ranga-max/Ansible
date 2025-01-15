@@ -105,4 +105,5 @@ keytool -list -v \
     -keystore ${DOMAIN}.keystore.jks \
     -storepass confluent
 
-rm -f *.cnf *.csr *.srl *.*12
+rm -f *.cnf *.csr *.srl 
+#rm *.*12

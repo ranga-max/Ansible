@@ -1,0 +1,27 @@
+---
+- name: Kafka Connectector Deployment
+hosts: kafka_connect
+gather_facts: false
+tags: kafka_connect
+tasks:
+
+   - name: Read connector config files
+     set_fact:
+        connector_files: "{{ lookup('fileglob', connector_dir + '/*.json')|split(',') }}"
+
+   - name: Generate active connectors list
+     set_fact:
+       active_connectors: "{{ active_connectors +[lookup('file', item)| from_json ] }}"
+       connectors_name: "{{ connectors_name +[lookup('file', item)| from_json |json_query('name') ] }}"
+     with_items: "{{ connector_files }}"
+
+   - name: debug active connectors list variable
+     debug:
+       var: active_connectors
+
+   - name: Deploy kafka connectors
+     kafka_connectors:
+          connect_url: "http://localhost:8083/connectors"
+          active_connectors: "{{ active_connectors }}"
+     register: result
+     when: active_connectors | length > 0 or active_connectors | json_query('[?name && config]') | length > 0

@@ -1,0 +1,15 @@
+---
+- name: Kafka Connector deployment
+  hosts: kafka_connect
+  gather_facts: false
+  tags: kafka_connect
+  tasks:
+    - name: Create Security Properties File
+      file:
+        path: "{{ secrets_protection_security_file  }}"
+        owner: "{{kafka_connect_user}}"
+        group: "{{kafka_connect_user}}"
+        state: touch
+   
+ # This wrapper gives option to add prerequisite tasks like file creation, assigning secrets from AWS secrets manager to cloud api keys and secrets etc
+- import_playbook: confluent.platform.all

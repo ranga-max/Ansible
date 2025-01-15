@@ -1,0 +1,49 @@
+—
+all:
+  vars:
+    ansible_connection: ssh
+    ansible_user: ec2-user
+    ansible_become: true
+    ansible_ssh_private_key_file: /home/ec2-user/guest.pem
+    deployment_strategy: rolling
+    installation_method: archive
+    confluent_archive_file_source: /home/azureadmin/confluent-7.4.4.zip
+    confluent_package_version: 7.4.4
+    binary_base_path: /opt/confluent/confluent-7.4.4
+    confluent_archive_file_remote: false
+
+
+    ccloud_kafka_enabled: true
+    ccloud_kafka_bootstrap_servers: 
+    ccloud_kafka_key: YYYYYYYYYYYYYY
+    ccloud_kafka_secret: zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz
+
+    ccloud_schema_registry_enabled: true
+    ccloud_schema_registry_url: https://psrc-zzzzz.europe-west3.gcp.confluent.cloud
+    ccloud_schema_registry_key: AAAAAAAAAAAAAAAA
+    ccloud_schema_registry_secret: bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+
+#Enable jmx
+    kafka_connect_jmxexporter_enabled: true
+    jmxexporter_enabled: true
+    kafka_connect_jmxexporter_port: 8078
+    jmxexporter_jar_url: /path/to/jmx_prometheus_javaagent-0.12.0.jar
+
+#Enable Secrets
+   secrets_protection_enabled: true
+  secrets_protection_masterkey: <masterkey>
+  secrets_protection_security_file: <base secret file path>
+
+kafka_connect:
+  hosts:
+    localhost:
+  vars:
+    Kafka_connect_custom_properties:
+      offset.flush.interval.ms: 10000
+      group.id: connect-cluster
+      offset.storage.topic: connect-offsets
+      offset.storage.replication.factor: 3
+      config.storage.topic: connect-configs
+      config.storage.replication.factor: 3
+      status.storage.topic: connect-status
+      status.storage.replication.factor: 3

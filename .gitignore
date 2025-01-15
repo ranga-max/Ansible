@@ -4,4 +4,9 @@
 /Schema/sr*.sh
 /Schema/jmx-monitoring-stacks/*
 /Schema/tmp.*
+Schema/__pycache__/
+Schema/custom_log*.*
+Schema/callbacks/__pycache__/
+Schema/ansible-logs*.*
+Schema/certs/cert
 
