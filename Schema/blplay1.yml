@@ -1,0 +1,22 @@
+---
+- name: List hostnames and host groups from the inventory file
+  hosts: localhost
+  gather_facts: no
+  tasks:
+
+    #Get the groups within a inventory file
+    - set_fact:
+        all_groups: "{{ groups.keys() | list  }}"
+    
+    - name: Display Groups
+      debug:
+        msg: "{{ all_groups }}"
+
+    - set_fact:
+        serverlist: "{{ groups[target_group]  }}"
+      vars:
+         target_group: schema_registry
+
+    - name: List all host groups and their hostnames
+      debug:
+        msg: "{{ serverlist }}"

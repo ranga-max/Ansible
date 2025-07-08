@@ -3,7 +3,8 @@
 PRIV_KEY_FILE=/home/ubuntu/.ssh/bc_key_rrchak.pem
 #create schemas to a custer in datacenter us east 1a
 #STEP 1
-ansible-playbook --private-key ${PRIV_KEY_FILE} -i mrchostsrbacmetric.yml --extra-vars "@./schemadef.yml" testplay1.yml -vvvv
+export ANSIBLE_VERBOSITY=2
+ansible-playbook --private-key ${PRIV_KEY_FILE} -i mrchostsrbacmetric.yml --extra-vars "@./schemadef.yml" testplay2.yml -vvvv
 #ansible-playbook --private-key ${PRIV_KEY_FILE} -i inventory.yml --extra-vars "@./schemasdefdock.yml" schemas_management.yml -vvvv
 #Just dump the schemas created from the previous step
 #STEP 2

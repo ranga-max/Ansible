@@ -34,7 +34,7 @@ all:
     rbac_enabled: true
     #secrets_protection_enabled: true
     confluent_cli_download_enabled: false   
-    #secrets_protection_masterkey: abC12DE+3fG45Hi67J8KlmnOpQr9s0Tuv+w1x2y3zab=
+    #secrets_protection_masterkey: xxxxx
     #rbac_component_additional_system_admins: [ user1 ]
     mds_super_user: mds
     mds_super_user_password: mds-secret
@@ -57,7 +57,13 @@ all:
             port: 9093
             ssl_enabled: true
             ssl_mutual_auth_enabled: false 
-            sasl_protocol: plain  
+            sasl_protocol: plain
+        plaintext_listener:
+            name: PLAINTEXT
+            port: 9095
+            ssl_enabled: false
+            ssl_mutual_auth_enabled: false
+            sasl_protocol: none       
     kafka_broker_custom_properties:
         kafka_broker_export_certs: false
         auto.create.topics.enable: false

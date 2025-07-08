@@ -13,6 +13,11 @@ all:
     #deployment_strategy: parallel
     deployment_strategy: rolling  
     ssl_enabled: true
+    ssl_custom_certs: true
+    #ssl_ca_cert_filepath: "/pathto/intermediate_and_root.pem"
+    #ssl_signed_cert_filepath: "/pathto/cert.pem"
+    #ssl_key_filepath: "/pathto/certpriv.key"
+    #regenerate_keystore_and_truststore: "true"  
     ssl_mutual_auth_enabled: false
     ssl_provided_keystore_and_truststore: true
    #ssl_keystore_filepath: "~/ssl/{{inventory_hostname}}-keystore.jks"
