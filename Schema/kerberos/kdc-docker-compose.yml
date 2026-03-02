@@ -1,0 +1,28 @@
+---
+services:
+
+    ####
+    #
+    # This file overrides values from environment/plaintext/docker-compose.yml
+    #
+    ####
+
+  kdc:
+    hostname: kdc.kerberos-demo.local
+    build: ../../environment/kerberos/kdc
+    container_name: kdc
+    command: /bin/sh -c "krb5kdc && kadmind && tail -f /dev/null" 
+    ports:
+      - "88:88" 
+      - "749:749"  
+    volumes:
+      - secret:/var/lib/secret
+      - ../../environment/kerberos/kdc/krb5hosts.conf:/etc/kdc/krb5.conf
+
+volumes:
+  secret: {}
+
+networks:
+  default:
+    name: kerberos-demo.local        
+

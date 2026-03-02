@@ -1,0 +1,24 @@
+//Required in our venv
+pip install --upgrade pip
+pip install ansible-core==2.16.*
+pip install bcrypt
+
+#Activate Virtual Env
+source ansible-env/bin/activate
+
+curl -O https://packages.confluent.io/confluent-control-center-next-gen/archive/confluent-control-center-next-gen-2.4.0.tar.gz
+
+sudo apt install openjdk-17-jre-headless
+java --version
+nano ~/.bashrc
+#Add Lines
+export JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"
+export PATH="$JAVA_HOME/bin:$PATH"
+source ~/.bashrc
+#Create the below softlinks
+sudo ln -sf "$JAVA_HOME/bin/java" /bin/java
+sudo ln -sf "$JAVA_HOME/bin/keytool" /bin/keytool
+#Export Client Binary before running client CLI..Add it to bashrc
+export PATH=$PATH:/home/ubuntu/confluent-7.8.2/bin
+# Call Ansible Playbook
+ansible-playbook -i mrchostsrbacmussl.yml confluent.platform.all --tags kafka_broker,kerberos -vvv

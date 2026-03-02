@@ -85,7 +85,7 @@ userpassword: connect-secret
 dn: cn=krp,dc=confluent,dc=io
 cn: krp
 gidnumber: 500
-givenname: connect
+givenname: krp
 homedirectory: /home/users/krp
 objectclass: inetOrgPerson
 objectclass: posixAccount
@@ -98,7 +98,7 @@ userpassword: krp-secret
 dn: cn=rest,dc=confluent,dc=io
 cn: rest
 gidnumber: 500
-givenname: connect
+givenname: rest
 homedirectory: /home/users/rest
 objectclass: inetOrgPerson
 objectclass: posixAccount

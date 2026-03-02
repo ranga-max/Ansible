@@ -1,6 +1,6 @@
 #! /bin/bash
 
-if [ "$#" -ne 2 ]
+if [ "$#" -ne 3 ]
 then
   echo "Error: No domain name argument provided"
   echo "Usage: Provide a domain name as an argument"
@@ -8,7 +8,8 @@ then
 fi
 
 DOMAIN=$1
-GENCA=$2
+SUBDOMAIN=$2
+GENCA=$3
 
 #openssl req -new -key ca-key.pem -x509 \
 #  -days 1000 \
@@ -29,7 +30,7 @@ fi
 echo "command2"
 openssl genrsa -aes256 -passout pass:confluent -out ${DOMAIN}-key.pem 4096
 echo "command3"
-openssl req -new -key ${DOMAIN}-key.pem -passin pass:confluent -out ${DOMAIN}-req.csr -nodes -subj "/C=US/ST=CA/L=MountainView/O=Confluent/OU=Operator/CN=kafka2.my.domain"
+openssl req -new -key ${DOMAIN}-key.pem -passin pass:confluent -out ${DOMAIN}-req.csr -nodes -subj "/C=US/ST=CA/L=MountainView/O=Confluent/OU=Operator/CN=${DOMAIN}.${SUBDOMAIN}"
 
 #openssl req -newkey rsa:4096 -keyout ${DOMAIN}-key.pem -passout pass:confluent -out ${DOMAIN}-req.csr -nodes -subj "/C=US/ST=CA/L=MountainView/O=Confluent/OU=Operator/CN=cluster1.my.domain"
 
@@ -44,7 +45,7 @@ openssl req -new -key ${DOMAIN}-key.pem -passin pass:confluent -out ${DOMAIN}-re
 echo "command4"
 cat > ${DOMAIN}-ext.cnf << EOF
 
-subjectAltName=DNS:*.my.domain,DNS:kafka.my.domain,DNS:*.rrchakdc1.ans.test.io,IP:172.192.0.1
+subjectAltName=DNS:*.my.domain,DNS:kafka.my.domain,DNS:*.rrchakdc1.ans.test.io,IP:172.192.0.1,DNS:*.ec2.internal
 
 EOF
 

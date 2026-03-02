@@ -12,4 +12,4 @@ Schema/certs/cert
 test*
 Schema/test*
 Schema/roles/
-
+Schema/ansible-env/

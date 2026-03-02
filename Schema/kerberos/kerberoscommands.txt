@@ -1,0 +1,56 @@
+#Bring up server first
+#Download Archive
+curl -O https://packages.confluent.io/archive/7.8/confluent-7.8.2.zip
+curl -O https://packages.confluent.io/confluent-control-center-next-gen/archive/confluent-control-center-next-gen-2.4.0.tar.gz
+
+#Start LDAP
+docker run -p 389:389 -p 636:636 --name ldap-service -h ldap-service -e LDAP_ORGANISATION="confluent" -e LDAP_DOMAIN="confluent.io" -e LDAP_ADMIN_PASSWORD="confluent" -d osixia/openldap:latest
+ldapadd -x -D "cn=admin,dc=confluent,dc=io" -w confluent -H ldap://localhost:389 -f users.ldif
+ldapsearch -x -D "cn=admin,dc=confluent,dc=io" -w confluent -H ldap://localhost:389 -LLL uid=*
+
+ansible-playbook -i mrchostsrbacmussl.yml confluent.platform.all -e "mask_secrets=false" -vvv
+
+docker compose -f kdc-docker-compose.yml build kdc
+docker compose -f kdc-docker-compose.yml up -d --quiet-pull kdc
+#Run kdc start.sh
+docker cp kdc:/var/lib/secret/ /home/ubuntu/Ansible/Schema/kerberos/keytabs
+#or copy directly from docker volume
+sudo cp -a /var/lib/docker/volumes/kerberos_secret/_data/. /home/ubuntu/Ansible/Schema/kerberos/keytabs
+#Change ownership if need be
+sudo chown -R ubuntu:ubuntu /home/ubuntu/Ansible/Schema/kerberos/keytabs
+ansible all -i mrchostsrbacmussl.yml --private-key ~/Week2_Trng.pem -m shell -a 'sudo rm -rf /etc/security/keytabs'
+ansible all -i mrchostsrbacmussl.yml --private-key ~/Week2_Trng.pem -m copy -a "src=~/Ansible/Schema/kerberos/keytabs/ dest=/etc/security/"
+
+#Install KDC on Brokers
+sudo apt install -y krb5-user
+
+#Add Remote Admin to access KDC
+kadmin.local -q "addprinc admin/admin"
+#Provide Password
+#Check ACL's beloe
+cat /var/kerberos/krb5kdc/kadm5.acl
+#Restart KDC Docker Container
+docker restart kdc
+#Check access
+kadmin -p admin/admin@TEST.CONFLUENT.IO
+#Update /etc/hosts on all brokers to resolve KDC hostname
+ansible all -i mrchostsrbacmussl.yml --private-key ~/Week2_Trng.pem -m shell -a 'echo "192.168.75.7 kdc" | sudo tee -a /etc/hosts > /dev/null'
+#Update /etc/krb5.conf on all hosts to point to your KDC and realm.
+
+# Initialize Kafka Client
+sudo kinit -k -t /var/lib/docker/volumes/kerberos_secret/_data/kafka-client.keytab kafka_producer@TEST.CONFLUENT.IO
+
+#kerberos validation commands
+sudo klist -kte /var/lib/docker/volumes/kerberos_secret/_data/kafka-0.keytab
+#clear cache
+kdestroy || true
+klist
+
+#Before running the kafka-topics client set the below KAFKA_OPTS...turn default to false if not required
+export KAFKA_OPTS="-Djava.security.krb5.conf=/etc/krb5.conf -Dsun.security.krb5.debug=true"
+
+# Test Various Listenerts
+# SSL listener
+kafka-topics -bootstrap-server kafka-0.rrchakdc1.ans.test.io:9091 --create --topic test_ssl_topic --partitions 3 --replication-factor 3 --command-config client-ssl.properties
+# Kerberos Listener
+
