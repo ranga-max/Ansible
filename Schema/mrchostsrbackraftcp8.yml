@@ -2,21 +2,42 @@
 
 all:
   vars:
-    kafka_connect_log_dir: /var/log/confluent
     ansible_connection: ssh
     ansible_user: ubuntu
+    ansible_group: ubuntu   
+    zookeeper_user: "{{ ansible_user }}"
+    zookeeper_group: "{{ ansible_group }}"
+    kafka_broker_user: "{{ ansible_user }}"
+    kafka_broker_group: "{{ ansible_group }}"
+    schema_registry_user: "{{ ansible_user }}"
+    schema_registry_group: "{{ ansible_group }}"  
+    kafka_connect_user: "{{ ansible_user }}"
+    kafka_connect_group: "{{ ansible_group }}"  
+    kafka_rest_user: "{{ ansible_user }}"
+    kafka_rest_group: "{{ ansible_group }}"  
+    control_center_user: "{{ ansible_user }}"
+    control_center_group: "{{ ansible_group }}"
+    control_center_next_gen_user: "{{ ansible_user }}"
+    control_center_next_gen_group: "{{ ansible_group }}"  
     ansible_become: true
     installation_method: archive
-    confluent_archive_file_source: /home/ubuntu/confluent-7.8.2.zip
-    confluent_package_version: 7.8.2  
-    binary_base_path: /opt/confluent/confluent-7.8.2
+    confluent_archive_file_source: /home/ubuntu/confluent-8.1.0.zip
+    confluent_package_version: 8.1.0
+    confluent_control_center_next_gen_archive_version: 2.4.0  
+    binary_base_path: /opt/confluent/confluent-8.1.0
+    confluent_cli_path: /opt/confluent/confluent-8.1.0/bin/confluent 
     confluent_archive_file_remote: false  
     deployment_strategy: parallel 
     ssl_enabled: true
     ssl_mutual_auth_enabled: true
-    ssl_client_authentication: required   
+    ssl_client_authentication: required  
     ssl_provided_keystore_and_truststore: true
-    export_certs: false  
+    control_center_next_gen_dependency_prometheus_ssl_enabled: true
+    control_center_next_gen_dependency_prometheus_mtls_enabled: true
+    control_center_next_gen_dependency_prometheus_basic_auth_enabled: false
+    control_center_next_gen_dependency_alertmanager_ssl_enabled: true
+    control_center_next_gen_dependency_alertmanager_mtls_enabled: true
+    control_center_next_gen_dependency_alertmanager_basic_auth_enabled: false
    #ssl_keystore_filepath: "~/ssl/{{inventory_hostname}}-keystore.jks"
     ssl_keystore_filepath: "/home/ubuntu/Ansible/Schema/certs/{{ inventory_hostname.split('.')|first }}.keystore.jks"
     ssl_keystore_key_password: confluent
@@ -25,20 +46,23 @@ all:
     ssl_truststore_filepath: "/home/ubuntu/Ansible/Schema/certs/{{ inventory_hostname.split('.')|first }}.truststore.jks"
     ssl_truststore_password: confluent
     ssl_truststore_ca_cert_alias: caroot 
-    ssl_provided_keystore_and_truststore_remote_src: false  
+    ssl_provided_keystore_and_truststore_remote_src: false 
+    confluent_archive_control_center_next_gen_file_remote: false
+    confluent_archive_control_center_next_gen_file_source: /home/ubuntu/confluent-control-center-next-gen-2.4.0.tar.gz  
       #validate_hosts: false  
     ansible_ssh_private_key_file: Week2_Trng.pem
     jolokia_enabled: false
     jmxexporter_enabled: true
     jmxexporter_url_remote: false
+    install_java: false  
     jmxexporter_jar_url: /home/ubuntu/jmx_prometheus_javaagent-0.12.0.jar  
     rbac_enabled: true
-    #secrets_protection_enabled: true
-    confluent_cli_download_enabled: false   
-    #secrets_protection_masterkey: xxxxx
-    #rbac_component_additional_system_admins: [ user1 ]
+    secrets_protection_enabled: true
+    confluent_cli_download_enabled: false
+    kafka_broker_metrics_reporter_for_control_center_next_gen_enabled: true
+    #kafka_controller_metrics_reporter_for_control_center_next_gen_enabled: true   
     secrets_protection_masterkey: abC12DE+3fG45Hi67J8KlmnOpQr9s0Tuv+w1x2y3zab=
-    secrets_protection_security_file: /tmp/security.properties
+    secrets_protection_security_file: /tmp/security.properties  
     rbac_component_additional_system_admins: [ rang, admin ]
     mds_super_user: mds
     mds_super_user_password: mds-secret
@@ -53,73 +77,29 @@ all:
     kafka_rest_ldap_user: rest
     kafka_rest_ldap_password: rest-secret
     control_center_ldap_user: c3
-    control_center_ldap_password: c3-secret  
-    #sasl_protocol: plain
-    confluent_license: "xxx"
-    ##Kerberos Properties
-    kerberos:
-      kdc_hostname: kdc
-      admin_hostname: kdc  
-      realm: TEST.CONFLUENT.IO
-      admin_principal: admin/admin@TEST.CONFLUENT.IO 
-      admin_password: admin
-      canonicalize: false # set this or nothing will work  
-      #kerberos_principal: "kafka/{{ inventory_hostname }}@TEST.CONFLUENT.IO"
-      
-    #kerberos_keytab_path: /etc/security/keytabs/kafka.service.keytab
+    control_center_ldap_password: c3-secret 
+    control_center_next_gen_ldap_user: c3
+    control_center_next_gen_ldap_password: c3-secret
+    sasl_protocol: plain
+    c3_prometheus_host: "c3nextgen.rrchakdc1.ans.test.io"
+    confluent_license: "xxx"  
     kafka_broker_custom_listeners:
         client_listener:
             name: CLIENT
-            port: 9093
-            ssl_enabled: true
-            ssl_mutual_auth_enabled: true 
-            sasl_protocol: plain
-        plaintext_listener:
-            name: PLAINTEXT
             port: 9095
-            ssl_enabled: false
-            ssl_mutual_auth_enabled: false
-            sasl_protocol: none      
-        kerberos_listener:      
-            name: KRB
-            port: 9097
-            sasl_protocol: kerberos
             ssl_enabled: true
-            ssl_mutual_auth_enabled: true
-            #sasl_mechanisms:
-            #  - GSSAPI      
+            ssl_mutual_auth_enabled: false  
+    #kafka_broker_custom_java_args: >
+    #  -Djavax.net.ssl.trustStore=/var/ssl/private/kafka_broker.truststore.jks
+    #  -Djavax.net.ssl.trustStorePassword=confluent
+    #  -Djavax.net.ssl.keyStore=/var/ssl/private/kafka_broker.keystore.jks
+    #  -Djavax.net.ssl.keyStorePassword=confluent        
     kafka_broker_custom_properties:
-        kafka_broker_export_certs: false
         auto.create.topics.enable: false
-        num.partitions: 1
-        #offsets.topic.replication.factor: 1
-        inter.broker.protocol.version: 3.8
-        min.insync.replicas: 2
-        default.replication.factor: 3
-        log.retention.ms: 43200000
-        #num.partitions: 4
-        #min.insync.replicas: 3
-        #default.replication.factor: 6
-        #offsets.topic.replication.factor: 6  
-        #authorizer.class.name: "kafka.security.authorizer.AclAuthorizer"
-        authorizer.class.name: "io.confluent.kafka.security.authorizer.ConfluentServerAuthorizer"
-        allow.everyone.if.no.acl.found: "true"
-        super.users: "User:kafka;User:sr;User:c3;User:rest"
         replica.selector.class: org.apache.kafka.common.replica.RackAwareReplicaSelector
         confluent.balancer.enable: true
         confluent.balancer.heal.uneven.load.trigger: ANY_UNEVEN_LOAD
         confluent.balancer.heal.broker.failure.threshold.ms: 360000
-        #confluent.log.placement.constraints: '{"version": 2,"replicas": [{"count": 1,"constraints": {"rack": "us-east-1a"
-        #}},{"count": 1,"constraints": {"rack": "us-east-1b"}}]}'  
-        #confluent.log.placement.constraints: '{"version": 2,"replicas": [{"count": 2,"constraints": {"rack": "us-east-1a"
-  #}},{"count": 2,"constraints": {"rack": "us-east-1b"}}],"observers": [{"count": 1,"constraints": {"rack": "us-east-1a"}},
-  #{"count": 1,"constraints": {"rack": "us-east-1b"}}],"observerPromotionPolicy":"under-min-isr"}'
-  #confluent.offsets.topic.placement.constraints: '{"version": 2,"replicas": [{"count": 2,"constraints": {"rack": "us-east-1a"
-  #}},{"count": 2,"constraints": {"rack": "us-east-1b"}}],"observers": [{"count": 1,"constraints": {"rack": "us-east-1a"}},
-  #{"count": 1,"constraints": {"rack": "us-east-1b"}}],"observerPromotionPolicy":"under-min-isr"}'
-  #confluent.transaction.state.log.placement.constraints: '{"version": 2,"replicas": [{"count": 2,"constraints": {"rack": "us-east-1a"
-  #}},{"count": 2,"constraints": {"rack": "us-east-1b"}}],"observers": [{"count": 1,"constraints": {"rack": "us-east-1a"}},
-  #{"count": 1,"constraints": {"rack": "us-east-1b"}}],"observerPromotionPolicy":"under-min-isr"}'
         ldap.java.naming.factory.initial: com.sun.jndi.ldap.LdapCtxFactory
         ldap.com.sun.jndi.ldap.read.timeout: 3000
           # ldap.java.naming.provider.url: "ldaps://openldap.ans.test.io:636"
@@ -153,8 +133,6 @@ all:
         ldap.user.memberof.attribute.pattern: CN=(.*),dc=confluent,dc=io
         ldap.user.object.class: inetOrgPerson
         ldap.user.search.scope: 2
-        confluent.basic.auth.credentials.source: USER_INFO
-        confluent.basic.auth.user.info: "alice:alice-secret"
         # Special callback for ldap listener
         listener.name.client.plain.sasl.jaas.config: org.apache.kafka.common.security.plain.PlainLoginModule required;
         listener.name.client.plain.sasl.server.callback.handler.class: io.confluent.security.auth.provider.ldap.LdapAuthenticateCallbackHandler
@@ -162,10 +140,22 @@ all:
         listener.name.client.ssl.principal.mapping.rules: |
             RULE:^CN=([a-zA-Z0-9]*).*$/$1/L ,\
             DEFAULT
+        #inter.broker.protocol.version: 3.9    
+        min.insync.replicas: 2
+        default.replication.factor: 3
+        log.retention.ms: 43200000
+        confluent.telemetry.exporter._c3.client.base.url: "https://{{ c3_prometheus_host }}:9090/api/v1/otlp"
         confluent.license: "{{ confluent_license }}"
 
     schema_registry_custom_properties:
         confluent.license: "{{ confluent_license }}"
+        dek.registry.rbac.enable: "true"
+        #CSFLE specific properties  
+        confluent.license.addon.csfle: "{{ confluent_license }}"
+        resource.extension.class: >
+         io.confluent.kafka.schemaregistry.security.SchemaRegistrySecurityResourceExtension,
+         io.confluent.kafka.schemaregistry.rulehandler.RuleSetResourceExtension,
+         io.confluent.dekregistry.DekRegistryResourceExtension   
 
     kafka_connect_custom_properties:
         confluent.license: "{{ confluent_license }}"
@@ -177,65 +167,34 @@ all:
         confluent.license: "{{ confluent_license }}"
 
     ksql_custom_properties:
-        confluent.license: "{{ confluent_license }}"    
+        confluent.license: "{{ confluent_license }}"
 
-zookeeper:
-  vars:
-    zookeeper_export_certs: false
+kafka_controller:
   hosts:
-    #zookeeper-0.rrchakdc1.ans.test.io:
-    kafka-0.rrchakdc1.ans.test.io:  
-       zookeeper_id: 1
-    kafka-1.rrchakdc1.ans.test.io:
-       zookeeper_id: 2
-    kafka-2.rrchakdc1.ans.test.io:
-       zookeeper_id: 3
+    #zookeeper-0.rrchakdc2.ans.test.io:
+    kafka-0.rrchakdc2.ans.test.io:  
+    kafka-1.rrchakdc2.ans.test.io:
+    kafka-2.rrchakdc2.ans.test.io:
 
 kafka_broker:
-  vars:
-    kafka_broker_export_certs: false
-    #kafka_broker_kerberos_keytab_path: "/home/ubuntu/Ansible/Schema/kerberos/keytabs/{{inventory_hostname.split('.')|first }}.keytab"
-    #kafka_broker_kerberos_principal: "kafka/{{inventory_hostname}}@TEST.CONFLUENT.IO"  
   hosts:
-    kafka-0.rrchakdc1.ans.test.io:
+    kafka-0.rrchakdc2.ans.test.io:
        broker_id: 1
-       kafka_broker_keytab_path: /etc/security/keytabs/kafka-0.keytab  
-       kafka_broker_kerberos_keytab_path: /home/ubuntu/Ansible/Schema/kerberos/keytabs/_data/kafka-0.keytab
-       kafka_broker_kerberos_principal: kafka/kafka-0.rrchakdc1.ans.test.io@TEST.CONFLUENT.IO 
-       kafka_broker_custom_properties:
-         broker.rack: us-east-1b  
-    kafka-1.rrchakdc1.ans.test.io:
-       broker_id: 2
-       kafka_broker_keytab_path: /etc/security/keytabs/kafka-1.keytab  
-       kafka_broker_kerberos_keytab_path: /home/ubuntu/Ansible/Schema/kerberos/keytabs/_data/kafka-1.keytab
-       kafka_broker_kerberos_principal: kafka/kafka-1.rrchakdc1.ans.test.io@TEST.CONFLUENT.IO
        kafka_broker_custom_properties:
          broker.rack: us-east-1b
-    kafka-2.rrchakdc1.ans.test.io:
-        broker_id: 3
-        kafka_broker_keytab_path: /etc/security/keytabs/kafka-2.keytab  
-        kafka_broker_kerberos_keytab_path: /home/ubuntu/Ansible/Schema/kerberos/keytabs/_data/kafka-2.keytab
-        kafka_broker_kerberos_principal: kafka/kafka-2.rrchakdc1.ans.test.io@TEST.CONFLUENT.IO
-        kafka_broker_custom_properties:
-          broker.rack: us-east-1b
- #  kafka-0.rrchakdc2.ans.test.io:
- #     broker_id: 4
- #     kafka_broker_custom_properties:
- #        broker.rack: us-east-1b
-#   kafka-1.rrchakdc2.ans.test.io:
-  #    broker_id: 5
-  #     kafka_broker_custom_properties:
-  #       broker.rack: us-east-1b
-#  kafka-2.rrchakdc2.ans.test.io:   
-#       broker_id: 6
-#       kafka_broker_custom_properties:
-#         broker.rack: us-east-1b
+    kafka-1.rrchakdc2.ans.test.io:
+       broker_id: 2
+       kafka_broker_custom_properties:
+         broker.rack: us-east-1b
+    kafka-2.rrchakdc2.ans.test.io:
+       broker_id: 3
+       kafka_broker_custom_properties:
+         broker.rack: us-east-1b
 
 schema_registry:
   vars:
-     schema_registry_export_certs: true
-     #schema_registry_cert_path:  /home/ubuntu/cert.pem
-     #schema_registry_key_path:  /home/ubuntu/key.pem
+    schema_registry_secrets_protection_encrypt_properties:
+      - confluent.license.addon.csfle
   #  schema_registry_group: cgi_sr_grp
   #   schema_registry_custom_properties:
   #     kafkastore.topic: _schemas_mrc1
@@ -248,14 +207,15 @@ schema_registry:
     #kafka-1.rrchakdc2.ans.test.io:  
       #schema_registry_custom_properties:
       # leader.eligibility: false
-    #schema-0.rrchakdc1.ans.test.io:
-    #schema-1.rrchakdc1.ans.test.io:  
-    kafka-0.rrchakdc1.ans.test.io:
-    kafka-1.rrchakdc1.ans.test.io:
-    kafka-2.rrchakdc1.ans.test.io:  
+    #schema-0.rrchakdc2.ans.test.io:
+    #schema-1.rrchakdc2.ans.test.io:  
+    kafka-0.rrchakdc2.ans.test.io:
+    kafka-1.rrchakdc2.ans.test.io:  
+    kafka-2.rrchakdc2.ans.test.io:  
+      
        #schema_registry_custom_properties:
          #  leader.eligibility: true
-         #  host.name: kafka-0.rrchakdc1.ans.test.io
+         #  host.name: kafka-0.rrchakdc2.ans.test.io
 
 kafka_connect:
   ## To set variables on all kafka_connect hosts, use the vars block here
@@ -294,40 +254,51 @@ kafka_connect:
   #   # To disable the feature:
   #   kafka_connect_secret_registry_enabled: false
   hosts:
-    kafka-0.rrchakdc1.ans.test.io:
-    kafka-1.rrchakdc1.ans.test.io:
-    kafka-2.rrchakdc1.ans.test.io:      
+    kafka-0.rrchakdc2.ans.test.io:
+    kafka-1.rrchakdc2.ans.test.io:
+    kafka-2.rrchakdc2.ans.test.io:      
 
 
-control_center:
+#control_center:
+#  vars:
+#    control_center_custom_properties:
+#       confluent.controlcenter.id: 1
+#       confluent.controlcenter.command.topic: _confluent_command_1
+#       confluent.controlcenter.internal.topics.retention.ms: 14400000
+#       confluent.metrics.topic.retention.ms: 14400000
+#       confluent.monitoring.interceptor.topic.retention.ms: 14400000   
+#  hosts:
+    #controlcenter-0.rrchakdc2.ans.test.io:
+#    kafka-0.rrchakdc2.ans.test.io: 
+
+control_center_next_gen:
   vars:
-    control_center_custom_properties:
-       confluent.controlcenter.id: 1
-       confluent.controlcenter.command.topic: _confluent_command_1
-       confluent.controlcenter.internal.topics.retention.ms: 14400000
-       confluent.metrics.topic.retention.ms: 14400000
-       confluent.monitoring.interceptor.topic.retention.ms: 14400000  
-       confluent.controlcenter.mode.enable: management  
-  hosts:
-    #controlcenter-0.rrchakdc1.ans.test.io:
-    kafka-0.rrchakdc1.ans.test.io: 
-
-#kafka_rest:
-  ## To set variables on all kafka_rest hosts, use the vars block here
-##  vars:
-#   kafka_rest_custom_properties:
-#      kafka.rest.authentication.method: BASIC
-#      kafka.rest.authentication.realm: KafkaRest
-  #   ## To configure Rest Proxy to run as a custom user, uncomment below
-  #   kafka_rest_user: custom-user
-  #   kafka_rest_group: custom-group
+    control_center_next_gen_port: 9022
+    control_center_next_gen_listener_hostname: "0.0.0.0"  
+    control_center_next_gen_custom_properties:
+      confluent.controlcenter.rest.sni.host.check.enabled: false
+  ## Default Port
+  #   C3's Dependency prometheus 9090
+  #   C3's Dependency alertmanager 9093  
+   #control_center_next_gen_dependency_prometheus_ssl_enabled: true
+   #control_center_next_gen_dependency_prometheus_mtls_enabled: true
+   #control_center_next_gen_dependency_prometheus_basic_auth_enabled: false
   #
-  #   ## To copy files to kafka_rest hosts, set this list below
-  #   kafka_rest_copy_files:
+  #  ## To Configure Authentication/Tls Mechanism for Control Center Next Gen's Alertmanager Service (Co Located in Next Gen's Node)
+   #control_center_next_gen_dependency_alertmanager_ssl_enabled: false
+   #control_center_next_gen_dependency_alertmanager_mtls_enabled: false
+   #control_center_next_gen_dependency_alertmanager_basic_auth_enabled: false
+  #   ## To copy files to control_center hosts, set this list below
+  #   control_center_next_gen_copy_files:
   #     - source_path: /path/to/file.txt
   #       destination_path: /tmp/file.txt
-  # hosts:
-  #  kafka-2.rrchakdc1.ans.test.io:
+  #
+  #  ## To configure Next Gen's Port
+  #   control_center_next_gen_port: 9022
+  hosts:
+    #    controlcenter-0.rrchakdc2.ans.test.io:
+     c3nextgen.rrchakdc1.ans.test.io:
+
 kafka_rest:
   ## To set variables on all kafka_rest hosts, use the vars block here
 ##  vars:
@@ -343,7 +314,6 @@ kafka_rest:
   #     - source_path: /path/to/file.txt
   #       destination_path: /tmp/file.txt
   hosts:
-     kafka-0.rrchakdc1.ans.test.io:
-     kafka-1.rrchakdc1.ans.test.io:
-     kafka-2.rrchakdc1.ans.test.io:
-                                    
+     kafka-0.rrchakdc2.ans.test.io:              
+     kafka-1.rrchakdc2.ans.test.io:
+     kafka-2.rrchakdc2.ans.test.io:

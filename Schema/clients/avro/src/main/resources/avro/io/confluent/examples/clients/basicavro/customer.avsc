@@ -1,0 +1,23 @@
+{
+  "doc": "Sample schema to help you get started with CSFLE.",
+  "fields": [
+    {
+      "name": "id",
+      "type": "string"
+    },
+    {
+      "confluent:tags": [
+        "PII"
+      ],
+      "name": "ssn",
+      "type": "string"
+    },
+    {
+      "name": "name",
+      "type": "string"
+    }
+  ],
+  "name": "Customer",
+  "namespace": "com.mycorp.mynamespace",
+  "type": "record"
+}

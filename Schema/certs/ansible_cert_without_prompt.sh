@@ -45,11 +45,11 @@ openssl req -new -key ${DOMAIN}-key.pem -passin pass:confluent -out ${DOMAIN}-re
 echo "command4"
 cat > ${DOMAIN}-ext.cnf << EOF
 
-subjectAltName=DNS:*.my.domain,DNS:kafka.my.domain,DNS:*.rrchakdc1.ans.test.io,IP:172.192.0.1,DNS:*.ec2.internal
+subjectAltName=DNS:*.my.domain,DNS:kafka.my.domain,DNS:*.rrchakdc1.ans.test.io,IP:172.192.0.1,DNS:*.ec2.internal,DNS:*.rrchakdc2.ans.test.io
 
 EOF
 
-echo"command5"
+echo "command5"
 openssl x509 -req -in ${DOMAIN}-req.csr -days 365 -CA ca-cert.pem -CAkey ca-key.pem -CAcreateserial -out ${DOMAIN}-cert.pem -extfile ${DOMAIN}-ext.cnf
 #openssl x509 -req -in server-req.csr -days 365 -CA ca-cert.pem -CAkey ca-key.pem -passin pass:confluent -CAcreateserial -out server-cert.pem -extfile server-ext.cnf
 
@@ -66,6 +66,9 @@ openssl pkcs12 -export \
     -name ${DOMAIN} \
     -out ${DOMAIN}.p12 \
     -password pass:confluent
+
+#in case sudo uses a different and more restricted PATH variable than your regular user for security reasons. Also the user's PATH (e.g., in ~/.bashrc), sudo will not see it.
+#sudo ln -s /usr/lib/jvm/java-17-openjdk-amd64/bin/keytool /usr/bin/keytool
 
 echo "command7"    
 sudo keytool -importkeystore \
@@ -108,3 +111,8 @@ keytool -list -v \
 
 rm -f *.cnf *.csr *.srl 
 #rm *.*12
+
+#Extract Key
+openssl pkcs12 -in client.p12 -nocerts -nodes -passin pass:confluent -out client.key
+#Extract Cert
+openssl pkcs12 -in client.p12 -clcerts -nokeys -passin pass:confluent -out client.crt

@@ -14,6 +14,7 @@ docker compose -f kdc-docker-compose.yml build kdc
 docker compose -f kdc-docker-compose.yml up -d --quiet-pull kdc
 #Run kdc start.sh
 docker cp kdc:/var/lib/secret/ /home/ubuntu/Ansible/Schema/kerberos/keytabs
+
 #or copy directly from docker volume
 sudo cp -a /var/lib/docker/volumes/kerberos_secret/_data/. /home/ubuntu/Ansible/Schema/kerberos/keytabs
 #Change ownership if need be
@@ -23,6 +24,8 @@ ansible all -i mrchostsrbacmussl.yml --private-key ~/Week2_Trng.pem -m copy -a "
 
 #Install KDC on Brokers
 sudo apt install -y krb5-user
+or
+ansible all -i mrchostsrbacmussl.yml --private-key ~/Week2_Trng.pem -m shell -a 'sudo apt-get update; sudo apt install -y krb5-user'  -vvv
 
 #Add Remote Admin to access KDC
 kadmin.local -q "addprinc admin/admin"
@@ -53,4 +56,5 @@ export KAFKA_OPTS="-Djava.security.krb5.conf=/etc/krb5.conf -Dsun.security.krb5.
 # SSL listener
 kafka-topics -bootstrap-server kafka-0.rrchakdc1.ans.test.io:9091 --create --topic test_ssl_topic --partitions 3 --replication-factor 3 --command-config client-ssl.properties
 # Kerberos Listener
-
+kafka-topics -bootstrap-server kafka-0.rrchakdc1.ans.test.io:9097 --create --topic test_kerb_topic --partitions 3 --replication-factor 3 --command-config kerbcache.properties
+kafka-topics -bootstrap-server kafka-0.rrchakdc1.ans.test.io:9097 --create --topic test_kerb_topic --partitions 3 --replication-factor 3 --command-config kerb.properties

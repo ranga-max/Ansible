@@ -6,7 +6,15 @@ pip install bcrypt
 #Activate Virtual Env
 source ansible-env/bin/activate
 
+ansible-galaxy collection install confluent.platform:8.1.0
+ansible-galaxy collection install ansible.posix
+ansible-galaxy collection install community.genera
+
+curl -O http://packages.confluent.io/archive/8.1/confluent-8.1.0.zip
 curl -O https://packages.confluent.io/confluent-control-center-next-gen/archive/confluent-control-center-next-gen-2.4.0.tar.gz
+
+ansible all -i mrchostsrbacmussl.yml --private-key ~/Week2_Trng.pem -m shell -a 'sudo apt-get update; sudo apt-get install -y  unzip'
+ansible all -i mrchostsrbacmetric.yml -m shell -a  'sudo apt install unzip'
 
 sudo apt install openjdk-17-jre-headless
 java --version
@@ -22,3 +30,98 @@ sudo ln -sf "$JAVA_HOME/bin/keytool" /bin/keytool
 export PATH=$PATH:/home/ubuntu/confluent-7.8.2/bin
 # Call Ansible Playbook
 ansible-playbook -i mrchostsrbacmussl.yml confluent.platform.all --tags kafka_broker,kerberos -vvv
+
+//Check c3Nextgen services
+
+systemctl status confluent-control-center or journalctl -u confluent-control-center -f
+systemctl status prometheus
+systemctl status alertmanager
+
+// For C3 Next gen
+Copy/create ca.crt into /var/private/ssl from ~/Ansible/Schema/certs and just restart prometheus systemctl restart prometheus
+
+//CSFLE
+
+curl -k -u mds:mds-secret https://kafka-0.rrchakdc2.ans.test.io:8090/security/1.0/authenticate
+confluent login --url https://kafka-2.rrchakdc2.ans.test.io:8090 --certificate-authority-path ca.crt
+
+export CONFLUENT_SECURITY_MASTER_KEY=xxx
+confluent secret file decrypt --local-secrets-file /var/ssl/private/schema-registry-security.properties --config-file schema-registry.properties --output-file sr-decrypt.txt
+
+#Maven Commands
+mvn clean compile package
+mvn -DskipTests  exec:java -Dexec.mainClass=io.confluent.examples.clients.basicavro.ProducerCsfle
+mvn -DskipTests  exec:java -Dexec.mainClass=io.confluent.examples.clients.basicavro.ConsumerCsf
+
+REGISTER RULES
+
+SCHEMA=$(curl -s \
+  --cacert ca.crt \
+  --cert   client.crt \
+  --key    client.key \
+  -u rang:rang-secret \
+  -H "Accept: application/vnd.schemaregistry.v1+json" \
+  "https://kafka-0.rrchakdc2.ans.test.io:8081/subjects/customer-value/versions/latest" \
+  | jq '.schema')
+
+
+# Attach Rule Set
+curl  \
+  --cacert ca.crt \
+  --cert   client.crt \
+  --key    client.key \
+  -u rang:rang-secret \
+  -H "Content-Type: application/vnd.schemaregistry.v1+json" \
+  --data @- \
+  "https://kafka-0.rrchakdc2.ans.test.io:8081/subjects/customer-value/versions" <<EOF
+{
+  "schemaType": "AVRO",
+  "schema": $SCHEMA,
+  "ruleSet": {
+    "domainRules": [
+      {
+        "name": "encryptPII",
+        "kind": "TRANSFORM",
+        "type": "ENCRYPT",
+        "mode": "WRITEREAD",
+        "tags": ["PII"],
+        "params": {
+          "encrypt.kek.name": "customer-ssn-kek",
+          "encrypt.kms.type": "aws-kms",
+          "encrypt.kms.key.id": "arn:aws:kms:us-east-1:xxxxxxxx:key/yyyyyy"
+        },
+        "onFailure": "ERROR,NONE"
+      }
+    ]
+  }
+}
+EOF
+
+
+# Check Ruleset
+curl -s \
+  --cacert ca.crt \
+  --cert   client.crt \
+  --key    client.key \
+  -u rang:rang-secret \
+  -H "Accept: application/vnd.schemaregistry.v1+json" \
+  "https://kafka-0.rrchakdc2.ans.test.io:8081/subjects/customer-value/versions/latest" \
+| jq '.ruleSet.domainRules[] | select(.type=="ENCRYPT")'
+
+
+# Check DEK Registry
+
+curl -s \
+  --cacert ca.crt \
+  --cert   client.crt \
+  --key    client.key \
+  -u rang:rang-secret \
+  -H "Accept: application/vnd.schemaregistry.v1+json" \
+  "https://kafka-0.rrchakdc2.ans.test.io:8081/dek-registry/v1/keks"
+
+- hosts: schema_registry
+  tasks:
+    - lineinfile:
+        path: /etc/schema-registry/schema-registry.properties
+        regexp: '^schema\.registry\.resource\.extension\.class='
+        state: absent
