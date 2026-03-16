@@ -10,6 +10,7 @@ all:
     confluent_archive_file_source: /home/ubuntu/confluent-7.8.2.zip
     confluent_package_version: 7.8.2  
     binary_base_path: /opt/confluent/confluent-7.8.2
+    confluent_cli_path: /opt/confluent/confluent-7.8.2/bin/confluent  
     confluent_archive_file_remote: false  
     deployment_strategy: parallel 
     ssl_enabled: true
@@ -33,7 +34,7 @@ all:
     jmxexporter_url_remote: false
     jmxexporter_jar_url: /home/ubuntu/jmx_prometheus_javaagent-0.12.0.jar  
     rbac_enabled: true
-    #secrets_protection_enabled: true
+    secrets_protection_enabled: true
     confluent_cli_download_enabled: false   
     #secrets_protection_masterkey: xxxxx
     #rbac_component_additional_system_admins: [ user1 ]
@@ -177,7 +178,46 @@ all:
         confluent.license: "{{ confluent_license }}"
 
     ksql_custom_properties:
-        confluent.license: "{{ confluent_license }}"    
+        confluent.license: "{{ confluent_license }}"   
+
+    # Example: broker JMX on 9999 (RMI 9998) with SSL
+    jmx_opts: > 
+        -Dcom.sun.management.jmxremote=true
+        -Dcom.sun.management.jmxremote.ssl=true
+        -Dcom.sun.management.jmxremote.registry.ssl=true
+        -Dcom.sun.management.jmxremote.ssl.need.client.auth=true
+        -Dcom.sun.management.jmxremote.authenticate=false
+        -Djava.rmi.server.hostname={{ inventory_hostname }}
+        -Djavax.net.ssl.keyStore=/var/ssl/private/kafka_broker.keystore.jks
+        -Djavax.net.ssl.keyStorePassword=confluent
+        -Djavax.net.ssl.keyStoreType=JKS
+        -Djavax.net.ssl.trustStore=/var/ssl/private/kafka_broker.truststore.jks
+        -Djavax.net.ssl.trustStorePassword=confluent
+        -Djavax.net.ssl.trustStoreType=JKS
+
+    zookeeper_service_environment_overrides:
+      JMX_PORT: 7770
+      KAFKA_JMX_OPTS: "{{ jmx_opts }}"    
+    
+    kafka_broker_service_environment_overrides:
+      JMX_PORT: 7771
+      KAFKA_JMX_OPTS: "{{ jmx_opts }}"
+
+    schema_registry_service_environment_overrides:
+      JMX_PORT: 7772
+      SCHEMA_REGISTRY_OPTS: "{{ jmx_opts }}"
+
+    kafka_connect_service_environment_overrides:
+      JMX_PORT: 7773
+      KAFKA_OPTS: "{{ jmx_opts }}"    
+
+    #ksql_service_environment_overrides:
+    #  JMX_PORT: 7774
+    #  KSQL_JMX_OPTS: "{{ jmx_opts }}"   
+
+    kafka_rest_service_environment_overrides:
+      JMX_PORT: 7775
+      KAFKAREST_OPTS: "{{ jmx_opts }}"     
 
 zookeeper:
   vars:
@@ -303,7 +343,7 @@ control_center:
   vars:
     control_center_custom_properties:
        confluent.controlcenter.id: 1
-       confluent.controlcenter.command.topic: _confluent_command_1
+       confluent.controlcenter.command.topic: _confluent_command
        confluent.controlcenter.internal.topics.retention.ms: 14400000
        confluent.metrics.topic.retention.ms: 14400000
        confluent.monitoring.interceptor.topic.retention.ms: 14400000  

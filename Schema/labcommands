@@ -40,7 +40,35 @@ systemctl status alertmanager
 // For C3 Next gen
 Copy/create ca.crt into /var/private/ssl from ~/Ansible/Schema/certs and just restart prometheus systemctl restart prometheus
 
+// JMX
+
+export KAFKA_OPTS="\
+  -Djavax.net.ssl.keyStore=client.keystore.jks \
+  -Djavax.net.ssl.keyStorePassword=confluent \
+  -Djavax.net.ssl.keyStoreType=JKS \
+  -Djavax.net.ssl.trustStore=client.truststore.jks \
+  -Djavax.net.ssl.trustStorePassword=confluent \
+  -Djavax.net.ssl.trustStoreType=JKS"
+
+kafka-run-class kafka.tools.JmxTool \
+  --jmx-url service:jmx:rmi:///jndi/rmi://kafka-0.rrchakdc1.ans.test.io:7771/jmxrmi \
+  --object-name 'kafka.server:type=BrokerTopicMetrics,name=MessagesInPerSec' \
+  --attributes 'Count,OneMinuteRate'
+
 //CSFLE
+
+At a high level, we add the KMS driver dependency and the rule.executors._default_.param.* properties, everything else is done under the hood with the java client.
+
+//Serializer looks up the schema + ruleSet (where your ENCRYPT rule is defined) for each subject.
+//Serializer calls EncryptionExecutor (generic field encryption engine)
+//EncryptionExecutor looks at encrypt.kms.type and calls the appropriate driver
+//KmsDriver is user to build an KMS client 
+//For first time EncryptionExecutor Generates a random data encryption key (DEK) in memory.
+//Calls KmsDriver → KmsClient → KMS Encrypt methid with your credentials to wrap that DEK under your KEK 
+//Sends the wrapped DEK and metadata to the DEK registry REST API, which stores it 
+//On the Producer Side the Serializer Uses the plaintext DEK (obtained by decrypting the stored DEK via KMS). Uses AEAD to encrypt those bytes. 
+//On the Consumer side we fetch the DEK from the DEK registry; use KMS Decrypt (through AwsKmsDriver) to unwrap it.
+
 
 curl -k -u mds:mds-secret https://kafka-0.rrchakdc2.ans.test.io:8090/security/1.0/authenticate
 confluent login --url https://kafka-2.rrchakdc2.ans.test.io:8090 --certificate-authority-path ca.crt
@@ -125,3 +153,6 @@ curl -s \
         path: /etc/schema-registry/schema-registry.properties
         regexp: '^schema\.registry\.resource\.extension\.class='
         state: absent
+
+//Source of AWS CSFLE KMS Driver
+https://github.com/confluentinc/schema-registry/tree/master/client-encryption-aws/src/main/java/io/confluent/kafka/schemaregistry/encryption/aws
