@@ -10,6 +10,9 @@ ansible-galaxy collection install confluent.platform:8.1.0
 ansible-galaxy collection install ansible.posix
 ansible-galaxy collection install community.genera
 
+#Ensure the right version is installed
+ansible-galaxy collection list | grep confluent.platform
+
 curl -O http://packages.confluent.io/archive/8.1/confluent-8.1.0.zip
 curl -O https://packages.confluent.io/confluent-control-center-next-gen/archive/confluent-control-center-next-gen-2.4.0.tar.gz
 
@@ -154,5 +157,296 @@ curl -s \
         regexp: '^schema\.registry\.resource\.extension\.class='
         state: absent
 
+// [OR]
+
+2 OPTIONS FOR KEK REGISTRATION
+
+KEK registration: up-front vs on-demand
+
+Pre-register KEK 
+
+Using DEK Registry REST 
+
+curl -s --cacert ca.crt   --cert client.crt --key client.key -u rang:rang-secret    -H "Content-Type: application/vnd.schemaregistry.v1+json"   -X POST https://kafka-0.rrchakdc2.ans.test.io:8081/dek-registry/v1/keks   -d '{
+        "name": "aws_kek_cli",
+        "kmsType": "aws-kms",
+        "kmsKeyId":"arn:aws:kms:us-east-1:xxxx:key/yyyy"
+      }'
+
+
+// Then in the rule set just reference:
+
+"params": {
+  "encrypt.kek.name": "aws_kek_1"
+}
+
+Let the client auto-register the KEK (on-demand):
+
+In the RuleSet you include both KEK name and KMS info
+
+"params": {
+  "encrypt.kek.name": "aws_kek_1",
+  "encrypt.kms.key.id": "<AWS KMS key ARN>",
+  "encrypt.kms.type": "aws-kms"
+}
+
+Next Attach RuleSet to the latest existing schema (no schema field)
+
+curl -s --cacert ca.crt --cert client.crt --key client.key -u rang:rang-secret -H "Content-Type: application/vnd.schemaregistry.v1+json" -X POST "https://kafka-0.rrchakdc2.ans.test.io:8081/subjects/csfle_cli-value/versions"   -d '{
+    "ruleSet": {
+      "domainRules": [
+        {                      
+          "name": "encryptPII",
+          "kind": "TRANSFORM",
+          "type": "ENCRYPT",
+          "mode": "WRITEREAD",
+          "tags": ["PII"],
+          "params": {                        
+            "encrypt.kek.name": "aws_kek_cli"
+          },                       
+          "onFailure": "ERROR,NONE"
+        }
+      ]
+    }
+  }'
+
+curl -s   --cacert ca.crt   --cert   client.crt   --key    client.key   -u rang:rang-secret   -H "Accept: application/vnd.schemaregistry.v1+json"   "https://kafka-0.rrchakdc2.ans.test.io:8081/subjects/csfle_cli-value/versions/latest" | jq '.ruleSet.domainRules[] | select(.type=="ENCRYPT")'
+{
+  "name": "encryptPII",
+  "kind": "TRANSFORM",
+  "mode": "WRITEREAD",
+  "type": "ENCRYPT",
+  "tags": [
+    "PII"
+  ],
+  "params": {
+    "encrypt.kek.name": "aws_kek_cli"
+  },
+  "onFailure": "ERROR,NONE",
+  "disabled": false
+}
+
+
+//Run Avro Producer
+
+Post exporting
+
+export AWS_SECRET_ACCESS_KEY=
+export AWS_ACCESS_KEY_ID=
+
+kafka-avro-console-producer --topic csfle_cli --bootstrap-server kafka-0.rrchakdc2.ans.test.io:9095 --producer.config sasl-ldap-csfle.properties --property schema.registry.url=https://kafka-0.rrchakdc2.ans.test.io:8081 --property schema.registry.ssl.truststore.location=/home/ubuntu/Ansible/Schema/certs/client.truststore.jks --property schema.registry.ssl.truststore.password=confluent --property schema.registry.ssl.truststore.type=JKS --property schema.registry.ssl.keystore.location=/home/ubuntu/Ansible/Schema/certs/client.keystore.jks --property schema.registry.ssl.keystore.password=confluent --property schema.registry.ssl.key.password=confluent --property schema.registry.ssl.keystore.type=JKS --property basic.auth.credentials.source=USER_INFO --property schema.registry.basic.auth.user.info=rang:rang-secret --property value.schema.id=6
+
+or without exporting the AWS Credentials as above and giving them as 'rule.executors' property as below
+
+kafka-avro-console-producer --topic csfle_cli --bootstrap-server kafka-0.rrchakdc2.ans.test.io:9095 --producer.config sasl-ldap-csfle.properties --property schema.registry.url=https://kafka-0.rrchakdc2.ans.test.io:8081 --property schema.registry.ssl.truststore.location=/home/ubuntu/Ansible/Schema/certs/client.truststore.jks --property schema.registry.ssl.truststore.password=confluent --property schema.registry.ssl.truststore.type=JKS --property schema.registry.ssl.keystore.location=/home/ubuntu/Ansible/Schema/certs/client.keystore.jks --property schema.registry.ssl.keystore.password=confluent --property schema.registry.ssl.key.password=confluent --property schema.registry.ssl.keystore.type=JKS --property basic.auth.credentials.source=USER_INFO --property schema.registry.basic.auth.user.info=rang:rang-secret --property value.schema.id=6 --property rule.executors._default_.param.access.key.id=xxx --property rule.executors._default_.param.secret.access.key=yyy
+
+//Provide a Sample message
+{"id":"2","taxid":"3456","name":"john"}
+
+//Run Avro Consumer
+
+kafka-avro-console-consumer --topic csfle_cli --from-beginning --bootstrap-server kafka-0.rrchakdc2.ans.test.io:9095 --consumer.config sasl-ldap-csfle.properties --property print.key=true --property schema.registry.url=https://kafka-0.rrchakdc2.ans.test.io:8081 --property schema.registry.ssl.truststore.location=/home/ubuntu/Ansible/Schema/certs/client.truststore.jks --property schema.registry.ssl.truststore.password=confluent --property schema.registry.ssl.truststore.type=JKS --property schema.registry.ssl.keystore.location=/home/ubuntu/Ansible/Schema/certs/client.keystore.jks --property schema.registry.ssl.keystore.password=confluent --property schema.registry.ssl.key.password=confluent --property schema.registry.ssl.keystore.type=JKS --property basic.auth.credentials.source=USER_INFO --property schema.registry.basic.auth.user.info=rang:rang-secret
+
+With 'rule.executors' property
+
+kafka-avro-console-consumer --topic csfle_cli --from-beginning --bootstrap-server kafka-0.rrchakdc2.ans.test.io:9095 --consumer.config sasl-ldap-csfle.properties --property print.key=true --property schema.registry.url=https://kafka-0.rrchakdc2.ans.test.io:8081 --property schema.registry.ssl.truststore.location=/home/ubuntu/Ansible/Schema/certs/client.truststore.jks --property schema.registry.ssl.truststore.password=confluent --property schema.registry.ssl.truststore.type=JKS --property schema.registry.ssl.keystore.location=/home/ubuntu/Ansible/Schema/certs/client.keystore.jks --property schema.registry.ssl.keystore.password=confluent --property schema.registry.ssl.key.password=confluent --property schema.registry.ssl.keystore.type=JKS --property basic.auth.credentials.source=USER_INFO --property schema.registry.basic.auth.user.info=rang:rang-secret --property rule.executors._default_.param.access.key.id=yyy --property rule.executors._default_.param.secret.access.key=xxx
+
+
+//Copy any encrytion driver to the below location
+
+///home/ubuntu/confluent-8.1.0/share/java/kafka-serde-tools
+
+
 //Source of AWS CSFLE KMS Driver
 https://github.com/confluentinc/schema-registry/tree/master/client-encryption-aws/src/main/java/io/confluent/kafka/schemaregistry/encryption/aws
+
+KRAFT Migration
+
+//PROCESS CHECK COMMANDS
+
+ps -eo pid,cmd
+systemctl status confluent-kcontroller
+systemctl cat confluent-kcontroller
+systemctl show confluent-kcontroller -p Environment
+ss -tnlp | grep 9081
+
+# Check ZK Status
+export PATH=$PATH:/opt/confluent/confluent-7.8.2/bin
+export CONFLUENT_SECURITY_MASTER_KEY=xxx
+kafka-topics --bootstrap-server kafka-0.rrchakdc1.ans.test.io:9091 --describe --command-config /opt/confluent/etc/kafka/client.properties  | egrep "Under-replicated|Offline"
+kafka-topics --bootstrap-server kafka-0.rrchakdc1.ans.test.io:9091 --under-replicated-partitions --describe --command-config /opt/confluent/etc/kafka/client.properties
+
+# Record cluster ID from ZooKeeper (used for KRaft format):
+In KRaft, every node’s data/log directories must contain a meta.properties file with a cluster.id,node.id that uniquely identifies the cluster
+zookeeper-shell kafka-0.rrchakdc1.ans.test.io:2182 -zk-tls-config-file /opt/confluent/etc/kafka/zookeeper-tls-client.properties get /cluster/id
+{"version":"1","id":"23K9lIlgQ52gvfv96ZIFmQ"}
+
+#Record current controller (ZK-mode):
+zookeeper-shell kafka-0.rrchakdc1.ans.test.io:2182 -zk-tls-config-file /opt/confluent/etc/kafka/zookeeper-tls-client.properties get /controller
+{"version":2,"brokerid":3,"timestamp":"1773674364741","kraftControllerEpoch":-1}
+
+//Start Phase 2 PREMIGRATION, the controllers are up and in “migration mode” but they have not started the real metadata copy yet.
+The active controller is still the ZK controller broker; KRaft controllers are essentially “standing by”. 
+ansible-playbook -i mrchostskraftmigrate.yml confluent.platform.ZKtoKraftMigration.yml --tags kafka_controller -vvv
+key point is: no KRAFT_ACL yet.
+authorizer.class.name: io.confluent.kafka.security.authorizer.ConfluentServerAuthorizer
+confluent.authorizer.access.rule.providers: CONFLUENT,ZK_ACL
+
+After Phase 2 ZK still owns controller role
+
+//But new KRaft Controller Process should be up
+
+Systemd:
+systemctl status confluent-kcontroller
+
+//KRaft Quormum would have been formed
+//Check CLI Status
+/opt/confluent/confluent-7.8.2/bin/kafka-metadata-quorum --bootstrap-controller kafka-0.rrchakdc1.ans.test.io:9093  --command-config /opt/confluent/etc/controller/client.properties describe --status
+
+ClusterId:              xxxxxx
+LeaderId:               9993
+LeaderEpoch:            8
+HighWatermark:          13856
+MaxFollowerLag:         0
+MaxFollowerLagTimeMs:   411
+CurrentVoters:          [9991,9992,9993]
+CurrentObservers:       []
+
+/opt/confluent/etc# /opt/confluent/confluent-7.8.2/bin/kafka-metadata-quorum --bootstrap-controller kafka-0.rrchakdc1.ans.test.io:9093  --command-config /opt/confluent/etc/controller/client.properties describe --replication
+
+NodeId  LogEndOffset    Lag     LastFetchTimestamp      LastCaughtUpTimestamp   Status
+9992    469204          0       1773928549216           1773928549216           Leader
+9991    469204          0       1773928549072           1773928549072           Follower
+9993    469204          0       1773928549072           1773928549072           Follower
+1       469204          0       1773928549071           1773928549071           Observer
+2       469204          0       1773928549071           1773928549071           Observer
+3       469204          0       1773928549071           1773928549071           Observer
+
+Broker configs (any broker)
+grep -E 'zookeeper.connect|controller.quorum.voters|zookeeper.metadata.migration.enable' /etc/kafka/server.properties
+# Expect:
+#   zookeeper.connect=...
+#   NO controller.quorum.voters
+#   NO zookeeper.metadata.migration.enable
+
+Get the log4j for Kafka Controllers
+systemctl show confluent-kcontroller -p Environment | grep KAFKA_LOG4J_OPTS
+For effectively debugging the log ser the below properties in log4j file
+# Extra logging for migration
+log4j.logger.org.apache.kafka.metadata.migration=TRACE
+log4j.logger.org.apache.kafka.metadata.migration.KRaftMigrationDriver=TRACE
+log4j.logger.org.apache.kafka.controller=DEBUG
+
+JMX/Jolokia check: ZkMigrationState
+kafka-run-class kafka.tools.JmxTool   --jmx-url service:jmx:rmi:///jndi/rmi://kafka-0.rrchakdc1.ans.test.io:7669/jmxrmi --object-name 'kafka.controller:type=KafkaController,name=ZkMigrationState'
+
+Before Phase 3
+The KRaft controller leader:
+   Reads the list of broker IDs from ZooKeeper (/brokers/ids).
+   Then waits until every broker in that ZK list has registered with the KRaft quorum as a “ZK broker in migration”
+
+Phase 3
+KRaft controller takes over /controller in ZK
+  It writes itself as the controller in the /controller znode (with a new epoch).
+  The old ZK‑mode controller broker sees the new epoch and steps down; it will reject future controller‑only RPCs.
+The KRaft controller is the controller and immediately runs the initial metadata load:
+
+It reads all metadata from ZooKeeper and writes it to the KRaft metadata log.
+During this copy, it does not handle broker RPCs as well
+
+//Phase 3 Commands
+
+ansible-playbook -i mrchostskraftmigrate.yml  confluent.platform.ZKtoKraftMigration.yml -vvv --tags migrate_to_dual_write
+
+curl -k  "https://localhost:9082/jolokia/read/kafka.controller:type=KafkaController,name=ZkMigrationState"
+{"request":{"mbean":"kafka.controller:name=ZkMigrationState,type=KafkaController","type":"read"},"value":{"Value":1},"timestamp":1773882713,"status":200}
+
+curl -s -k https://localhost:9082/jolokia/read/kafka.controller:type=KafkaController,name=ZkMigrationState | jq '.value.Value'
+# Expect: 1   (Migration / dual-write)
+
+zookeeper-shell kafka-0.rrchakdc1.ans.test.io:2182 -zk-tls-config-file /opt/confluent/etc/kafka/zookeeper-tls-client.properties get /controller
+{"version":2,"brokerid":9992,"timestamp":"1773882380291","kraftControllerEpoch":34}
+
+kafka-run-class kafka.tools.JmxTool   --jmx-url service:jmx:rmi:///jndi/rmi://kafka-0.rrchakdc1.ans.test.io:7669/jmxrmi --object-name 'kafka.controller:type=KafkaController,name=ZkMigrationState'
+WARNING: The 'kafka.tools' package is deprecated and will change to 'org.apache.kafka.tools' in the next major release.
+Trying to connect to JMX url: service:jmx:rmi:///jndi/rmi://kafka-0.rrchakdc1.ans.test.io:7669/jmxrmi
+"time","kafka.controller:type=KafkaController,name=ZkMigrationState:Value"
+1773883278729,1
+
+/opt/confluent/confluent-7.8.2/bin/kafka-metadata-quorum --bootstrap-controller kafka-0.rrchakdc1.ans.test.io:9093  --command-config /opt/confluent/etc/controller/client.properties describe --status
+# Healthy leader, voters; HighWatermark > 0
+
+NOTE: The metadata log is stored only on the controllers’ log.dirs as an internal log directory named __cluster_metadata, not as a broker topic you can list or inspect via kafka-topics / C3.
+Control Center only shows broker topics, so __cluster_metadata never appears there.
+
+ls -R /var/lib/controller/data | grep -A2 __cluster_metadata
+
+
+//Write and Read Path in Phase 3
+When KRaft starts migration, the KRaft controller writes itself into /controller (with a controller id + epoch).
+All brokers (rolled or not) see this znode change and update their “current controller” id/epoch.
+Gets controller endpoint via the usual ZK metadata
+
+Write / metadata
+The KRaft controller, in migration mode, also registers itself in ZK in the same way a broker controller would (effectively creating a “synthetic broker entry” with its host/port).
+ZK‑mode brokers don’t know or care that it’s a “KRaft controller”; they just see:
+/controller → controller id X
+/brokers/ids/X → host:port
+They then open the normal controller connection to that host:port and send controller RPCs there.
+They do not talk to another rolled broker to find the controller.
+They do not need controller.quorum.voters.
+They simply keep using ZK’s /controller + /brokers/ids, and the KRaft controller takes care of looking like the controller from a ZK broker’s perspective.
+Reads / metadata:
+Still served from the broker’s in‑memory cache; that cache is kept in sync by the (now KRaft) controller and by ZK state that the controller dual‑writes back into ZK
+
+Where dual‑write to ZK fits in
+
+Dual‑write is there so that ZK remains consistent for ZK‑mode brokers that still read some things directly from ZK (ACLs, dynamic configs, etc.).
+But the core cluster metadata (leaders, ISR, assignments) delivered to brokers still flows via controller→broker RPCs, now originating from the KRaft controller instead of a broker‑controller.
+So: ZK‑mode brokers get UpdateMetadata from the KRaft controller they discovered via ZK; dual‑write keeps ZK state aligned for the remaining ZK readers inside the brokers.
+
+Phase 4
+-------
+
+Commands
+
+Flip confluent.authorizer.access.rule.providers to KRAFT_ACL,CONFLUENT
+ansible-playbook -i mrchostskraftmigrate.yml   confluent.platform.all   --tags kafka_controller
+
+ansible-playbook -i mrchostskraftmigrate.yml   confluent.platform.ZKtoKraftMigration.yml -vvv  --tags migrate_to_kraft
+
+curl -k  "https://localhost:9082/jolokia/read/kafka.controller:type=KafkaController,name=ZkMigrationState" | jq '.value.Value'
+{"request":{"mbean":"kafka.controller:name=ZkMigrationState,type=KafkaController","type":"read"},"value":{"Value":3},"timestamp":1773942359,"status":200}
+
+kafka-run-class kafka.tools.JmxTool   --jmx-url service:jmx:rmi:///jndi/rmi://kafka-0.rrchakdc1.ans.test.io:7669/jmxrmi --object-name 'kafka.controller:type=KafkaController,name=ZkMigrationState'
+WARNING: The 'kafka.tools' package is deprecated and will change to 'org.apache.kafka.tools' in the next major release.
+Trying to connect to JMX url: service:jmx:rmi:///jndi/rmi://kafka-0.rrchakdc1.ans.test.io:7669/jmxrmi
+"time","kafka.controller:type=KafkaController,name=ZkMigrationState:Value"
+1773942560249,3
+
+// Check the configs
+
+Controller Configs
+grep -E 'zookeeper.connect|zookeeper.metadata.migration.enable' /opt/confluent/etc/controller/server.properties
+# Expect: NO matches
+
+Broker configs (any broker)
+grep -E 'zookeeper.connect|zookeeper.metadata.migration.enable' /opt/confluent/etc/kafka/server.properties
+# Expect: NO matches (all zookeeper.* gone)
+
+
+// once the migration is fully complete you should remove (or set to false) kraft_migration: true from the inventory file
+
+//Remove ZK out of equation
+//ansible all -i mrchostskraftmigrate.yml -m shell -a  'sudo systemctl stop confluent-zookeeper'
+#Post stopping the ZK process across all the nodes, the cluster should still be healthy in Kraft mode
+#Perform some admin operations[CreateTopics, CreatePartitions) etc against the cluster. Produce and Consume some message from the topic[e.g. test_pure_kraft]
+
+Brokers in ZooKeeper mode
+Authoritative metadata lives in ZooKeeper znodes (/brokers, /topics, /config, /controller, etc.).
+Write path (create topic, alter partitions, etc.)-- Admin client → any broker(CreateTopics, CreatePartitions) --broker-->current controller Controller validates and does all ZooKeeper writes
+Controller broadcasts new metadata to brokers(LeaderAndIsr / UpdateMetadata RPCs to all brokers.)--> broker updates its in‑memory metadata cache
+Read path (DescribeTopics, Metadata, etc.)..Brokers read from in‑memory metadata cache.--> The Cache is kept up‑to‑date by the controller’s UpdateMetadata RPCs and controller changes, not by hitting ZK per request.
+
+
+

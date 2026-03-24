@@ -164,6 +164,9 @@ all:
             RULE:^CN=([a-zA-Z0-9]*).*$/$1/L ,\
             DEFAULT
         confluent.license: "{{ confluent_license }}"
+        confluent.authorizer.access.rule.providers: KRAFT_ACL,CONFLUENT  
+        listener.name.controller.ssl.principal.mapping.rules: >
+            RULE:^[Cc][Nn]=(.*?),.*$/$1/L,DEFAULT  
 
     schema_registry_custom_properties:
         confluent.license: "{{ confluent_license }}"
@@ -195,6 +198,11 @@ all:
         -Djavax.net.ssl.trustStorePassword=confluent
         -Djavax.net.ssl.trustStoreType=JKS
 
+    kafka_controller_service_environment_overrides:
+      JMX_PORT: 7669
+      KAFKA_JMX_OPTS: "{{ jmx_opts }}"
+      #KAFKA_LOG4J_OPTS: "-Dlog4j.configuration=file:/etc/kafka/custom_controller_log4j.properties"    
+
     zookeeper_service_environment_overrides:
       JMX_PORT: 7770
       KAFKA_JMX_OPTS: "{{ jmx_opts }}"    
@@ -217,7 +225,65 @@ all:
 
     kafka_rest_service_environment_overrides:
       JMX_PORT: 7775
-      KAFKAREST_OPTS: "{{ jmx_opts }}"     
+      KAFKAREST_OPTS: "{{ jmx_opts }}"    
+
+    #KRaft Migration
+    # Enable ZK→KRaft migration
+    kraft_migration: true
+    
+      # Super users (applied to both brokers and controllers)
+    # Optional: map full DN → simple name
+    #principal_mapping_rules:
+    #  - "RULE:.*CN=([a-zA-Z0-9._-]*).*$/$1/"
+    #  - "DEFAULT"
+
+    rbac_super_users:
+      - "User:kafka-0.rrchakdc1.ans.test.io,OU=Operator,O=Confluent,L=MountainView,ST=CA,C=US"        # after principal_mapping_rules
+      - "User:kafka-1.rrchakdc1.ans.test.io,OU=Operator,O=Confluent,L=MountainView,ST=CA,C=US"
+      - "User:kafka-0.rrchakdc2.ans.test.io,OU=Operator,O=Confluent,L=MountainView,ST=CA,C=US"
+      - "User:mds"
+
+        #cp‑ansible will:
+        #Set process.roles=controller and node.id on the controller JVMs.
+        #Set process.roles=broker and node.id on the broker JVMs.
+        #Compute and set controller.quorum.voters from the controller group via kafka_controller_quorum_voters’ default template (nodeId@host:port for each controller).
+        #Push that same controller.quorum.voters into the broker configs        
+
+kafka_controller:
+  vars:
+    kafka_controller_jolokia_enabled: true
+    kafka_controller_jmxexporter_port: 9081
+    kafka_controller_jolokia_port: 9082  
+    kafka_controller_copy_files:
+      - source_path: /home/ubuntu/Ansible/Schema/kraft_log4j.properties 
+        destination_path: /opt/confluent/confluent-7.8.2/etc/kafka/log4j.properties
+    #KRaft Controller <-> Controller talk for Raft elections (voting)/ Replication of the metadata log(_cluster_metadata)/ Membership/health checks inside the quorum
+    #Over the CONTROLLER listener on each controller
+    #Authn via whatever you configured on that listener (mTLS and/or SASL), no brokers involved.
+    #Authz This is internal quorum traffic; it does not go through the Kafka authorizer as normal client RPCs
+        # Controller sees the broker’s TLS principal and authorizes it via:
+             #ACLs, or
+             #super.users on the controller
+    #cp-ansible does not auto-derive KRaft super.users from hostnames/cert CNs; you should explicitly specify them in inventory
+    kafka_controller_custom_properties:
+      authorizer.class.name: io.confluent.kafka.security.authorizer.ConfluentServerAuthorizer
+      confluent.authorizer.access.rule.providers: KRAFT_ACL,CONFLUENT
+      #listener.name.controller.ssl.principal.mapping.rules: "RULE:^[Cc][Nn]=(.*?),.*$/$1/L,DEFAULT"  
+      # Default cp-ansible KRaft controller port is 9093
+
+  hosts:
+    kafka-0.rrchakdc1.ans.test.io:
+       kafka_controller_keytab_path: /etc/security/keytabs/kafka-0.keytab
+       kafka_controller_kerberos_keytab_path: /home/ubuntu/Ansible/Schema/kerberos/keytabs/_data/kafka-0.keytab
+       kafka_controller_kerberos_principal: kafka/kafka-0.rrchakdc1.ans.test.io@TEST.CONFLUENT.IO 
+    kafka-1.rrchakdc1.ans.test.io: 
+       kafka_controller_keytab_path: /etc/security/keytabs/kafka-1.keytab
+       kafka_controller_kerberos_keytab_path: /home/ubuntu/Ansible/Schema/kerberos/keytabs/_data/kafka-1.keytab
+       kafka_controller_kerberos_principal: kafka/kafka-1.rrchakdc1.ans.test.io@TEST.CONFLUENT.IO
+    kafka-2.rrchakdc1.ans.test.io:      
+       kafka_controller_keytab_path: /etc/security/keytabs/kafka-2.keytab
+       kafka_controller_kerberos_keytab_path: /home/ubuntu/Ansible/Schema/kerberos/keytabs/_data/kafka-2.keytab
+       kafka_controller_kerberos_principal: kafka/kafka-2.rrchakdc1.ans.test.io@TEST.CONFLUENT.IO
 
 zookeeper:
   vars:
@@ -232,10 +298,20 @@ zookeeper:
        zookeeper_id: 3
 
 kafka_broker:
+  #Kafka Broker <-> On startup/registration: broker registers, advertises endpoints/features;Heartbeats to keep broker membership live;Fetch metadata/react to leadership changes,replica assignments
+  #Handling admin operations (topic create/delete, configs) the broker issues metadata changes to the controller 
+  #Authz
+   #Broker sees the controller’s TLS principal and authorizes it via:
+   #ACLs, or
+   #super.users on the broker
   vars:
     kafka_broker_export_certs: false
     #kafka_broker_kerberos_keytab_path: "/home/ubuntu/Ansible/Schema/kerberos/keytabs/{{inventory_hostname.split('.')|first }}.keytab"
     #kafka_broker_kerberos_principal: "kafka/{{inventory_hostname}}@TEST.CONFLUENT.IO"  
+    #kafka_broker_custom_properties:
+    #  authorizer.class.name: io.confluent.kafka.security.authorizer.ConfluentServerAuthorizer
+    #  confluent.authorizer.access.rule.providers: KRAFT_ACL,CONFLUENT
+
   hosts:
     kafka-0.rrchakdc1.ans.test.io:
        broker_id: 1
